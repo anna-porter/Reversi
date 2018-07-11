@@ -25,7 +25,7 @@ public:
    void setTurn(int newTurn) {turn = newTurn;}
    int getColumn() {return column;}
    int getRow() {return row;}
-};
+}; 
 
 // The board for the game to be played on
 class Board
@@ -47,7 +47,7 @@ public:
    pair<int, int> getScore();
    //void setWhiteTurn() {moveNum += 1;} //increment turn by one
    void setTurn() {moveNum += 1;} //increment turn by one
-   vector<int> getValidMoves(player);
+   vector<int> getValidMoves(player) const;
    vector<int> checkRight(int, player);
    vector<int> checkLeft(int, player);
    vector<int> checkDown(int, player);
@@ -56,7 +56,7 @@ public:
    vector<int> checkUpperLeft(int, player);
    vector<int> checkLowerRight(int, player);
    vector<int> checkLowerLeft(int, player);
-   vector<int> checkDirection(int, player, int, int);
+   //vector<int> checkDirection(int, player, int, int);
 
    vector<Tile> getBoard() const{return BoardLayout;}
 
