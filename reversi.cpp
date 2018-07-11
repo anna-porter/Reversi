@@ -240,7 +240,7 @@ bool Board::isValidMove(int location, player mover) {
    return false;
 }
 
-vector<int> Board::getValidMoves(player mover) const
+vector<int> Board::getValidMoves(player mover)
 {
    int size;
    size = this->getSize();
@@ -615,7 +615,7 @@ vector<int> Board::checkLowerRight(int location, player mover)
    }
    return flipTiles;
 }
-vector<int> Board::checkLowerLeft(int location, player mover)
+vector<int> Board::checkLowerLeft(int location, player mover) 
 {
    //int size = this->getSize();
    Tile *locationTile = &(BoardLayout[location]);
@@ -788,5 +788,4 @@ int main()
       }
    }
    return 0;
-}
-*/
+}*/
