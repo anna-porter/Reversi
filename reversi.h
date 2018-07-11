@@ -47,7 +47,7 @@ public:
    pair<int, int> getScore();
    //void setWhiteTurn() {moveNum += 1;} //increment turn by one
    void setTurn() {moveNum += 1;} //increment turn by one
-   vector<int> getValidMoves(player) const;
+   vector<int> getValidMoves(player);
    vector<int> checkRight(int, player);
    vector<int> checkLeft(int, player);
    vector<int> checkDown(int, player);
