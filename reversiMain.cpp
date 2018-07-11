@@ -7,24 +7,28 @@
 // Real main based off of ORR and CRR
 
 #include "reversi.h"
-
+ 
 extern const int numAgents;
 extern int (*agentFunc[])(const Board &, player);
 extern string agentStr[];
 
-// needs to be written
+//int reversiAgentRandom(const Board &board, player whichPlayer);
+//int reversiAgentRandomClone(const Board &board, player whichPlayer);
+
+
 char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*agentBlack)(const Board&, player whichPlayer), Board& reversiBoard);
 
-// main attempt
 int main()
 {
    char result;
    int  i, j, boardSize, numWinsWhite[numAgents], numWinsBlack[numAgents],
-   //added invalid move counter.
-       numLossesWhite[numAgents], numLossesBlack[numAgents], numMoves[numAgents], order[numAgents], numInvalid[numAgents], temp;
+       numLossesWhite[numAgents], numLossesBlack[numAgents], /*numMoves[numAgents],*/ order[numAgents], numInvalid[numAgents], temp;
 
    Board *reversiBoard;
 
+   //BOARD SIZE DECLARATION HERE
+   boardSize = 8;
+   
    cout << "Research Project: Reversi\n"
         << "Results\n\n";
 
@@ -48,7 +52,7 @@ int main()
       {
          if (i != j)
          {
-            cout << "Current board size is " << boardSize << "x" << boardSize << "\n";
+            //cout << "Current board size is " << boardSize << "x" << boardSize << "\n";
             reversiBoard = new Board(boardSize);
             cout << "player A = " << agentStr[i] << ", player B = " << agentStr[j];
             result = playReversiGame(agentFunc[i], agentFunc[j], *reversiBoard);
@@ -154,75 +158,79 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
    // repeatedly call playerA's and playerBlack's function until someone wins or makes an invalid move
    while(!reversiBoard.isGameOver())
    {
-      // player A goes first
-      int playerWhite_move = (*agentWhite)(reversiBoard, White);
-//      numMovesA += 1;
-
-      //if it is an invalid move, B automatically wins
-      if(!reversiBoard.isValidMove(playerWhite_move, White))
+      // player A goes first, if they still have valid moves,
+      // Otherwise, pass to black
+      if(reversiBoard.getValidMoves(White).size() != 0)
       {
-         // Let's let 'D' represent that player B won because of A's invalid move
-         result = 'D';
-         reversiBoard->printBoard();
-         return result;
-      }
-      // Update the board for player A
-      else
-      {
-         reversiBoard.makeMove(playerWhite_move, White);
-         reversiBoard->printBoard();
-      }
-
-      // if playerA made a move that won them the game then return result
-      if(reversiBoard.isGameOver())
-      {
-         pair<int, int> finalScore;
-         finalScore = reversiBoard.getScore();
-         if(finalScore.first > finalScore.second)
+         int playerWhite_move = (*agentWhite)(reversiBoard, White);
+         
+         //if it is an invalid move, B automatically wins
+         if(!reversiBoard.isValidMove(playerWhite_move, White))
          {
-            result = 'A';
+            // Let's let 'D' represent that player B won because of A's invalid move
+            result = 'D';
+            reversiBoard.printBoard();
+            return result;
          }
-         else if (finalScore.second > finalScore.first)
+         // Update the board for player A
+         else
          {
-            result = 'B';
+            reversiBoard.makeMove(playerWhite_move, White);
+            reversiBoard.printBoard();
          }
 
-         return result;
-      }
-
-      int playerBlack_move = (*agentBlack)(reversiBoard, Black);
-//      numMovesB += 1;
-
-      // if it is an invalid move, A automatically wins
-      if(!reversiBoard.isValidMove(playerBlack_move, Black))
-      {
-         // Let's let 'C' represent that A won because of B's invalid move
-         result = 'C';
-         reversiBoard->printBoard();
-         return result;
-      }
-      // Update the board for player B
-      else
-      {
-         reversiBoard.makeMove(playerBlack_move, Black);
-         reversiBoard->printBoard();
-      }
-
-      // if playerBlack made a move that won them the game then return result
-      if(reversiBoard.isGameOver())
-      {
-         pair<int, int> finalScore;
-         finalScore = reversiBoard.getScore();
-         if(finalScore.first > finalScore.second)
+         // if playerA made a move that won them the game then return result
+         if(reversiBoard.isGameOver())
          {
-            result = 'A';
+            pair<int, int> finalScore;
+            finalScore = reversiBoard.getScore();
+            if(finalScore.first > finalScore.second)
+            {
+               result = 'A';
+            }
+            else if (finalScore.second > finalScore.first)
+            {
+               result = 'B';
+            }
+
+            return result;
          }
-         else if (finalScore.second > finalScore.first)
+      }
+      if(reversiBoard.getValidMoves(Black).size() != 0)
+      {
+         int playerBlack_move = (*agentBlack)(reversiBoard, Black);
+
+         // if it is an invalid move, A automatically wins
+         if(!reversiBoard.isValidMove(playerBlack_move, Black))
          {
-            result = 'B';
+            // Let's let 'C' represent that A won because of B's invalid move
+            result = 'C';
+            reversiBoard.printBoard();
+            return result;
+         }
+         // Update the board for player B
+         else
+         {
+            reversiBoard.makeMove(playerBlack_move, Black);
+            reversiBoard.printBoard();
          }
 
-         return result;
+         // if playerBlack made a move that won them the game then return result
+         if(reversiBoard.isGameOver())
+         {
+            pair<int, int> finalScore;
+            finalScore = reversiBoard.getScore();
+            if(finalScore.first > finalScore.second)
+            {
+               result = 'A';
+            }
+            else if (finalScore.second > finalScore.first)
+            {
+               result = 'B';
+            }
+
+            return result;
+         }
       }
 
    }
