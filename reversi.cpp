@@ -1,11 +1,8 @@
-
-
-#include "Reversi.h"
+#include "reversi.h"
 #include <vector>
 
 Tile::Tile(int location, int size)
 {
-   //cout << "in Tile" << endl;
    owner = none;
    turn = 0;
    this->location = location;
@@ -13,11 +10,8 @@ Tile::Tile(int location, int size)
    column = location % size;
 }
 
-// Looks good as is.
 Board::Board(int size)
 {
-   //cout << "In Board 1" << endl;
-   ////cout << size << endl;
    this->size = size;
    this->moveNum = 0;
    int i;
@@ -27,6 +21,7 @@ Board::Board(int size)
    }
    int mid, topLeft, bottomLeft, topRight, bottomRight;
    mid = size / 2;
+   // set up the board with 4 tiles in the middle in a diagonal fashion 
    topLeft = (mid - 1) * size + (mid - 1);
    bottomLeft = (mid - 1) * size + mid;
    topRight = mid * size + (mid - 1);
@@ -40,35 +35,20 @@ Board::Board(int size)
 
 Board::Board(const Board &copy)
 {
-  //cout << "in Board 2" << endl;
    this->BoardLayout.clear();
-
    this->size = copy.getSize();
    this->moveNum = copy.getTurnNum();// changed from whiteinc
    //this->moveNum = copy.getTurn(); // changed from blackinc
    this->BoardLayout = copy.getBoard();
-   /*int topLeft, bottomLeft, topRight, bottomRight;
-   topLeft = getTileLocation(3, 3);
-   bottomLeft = getTileLocation(3, 4);
-   topRight = getTileLocation(4, 3);
-   bottomRight = getTileLocation(4,4);
-   BoardLayout.makeMove(topLeft, White);
-   BoardLayout.makeMove(bottomLeft, Black);
-   BoardLayout.makeMove(topRight, Black);
-   BoardLayout.makeMove(bottomLeft, White);*/
 }
 
 Board& Board::operator=(const Board &rhs)
 {
-   //cout << "In operator= " << endl;
    this->BoardLayout.clear();
-
    this->size = rhs.getSize();
    this->moveNum = rhs.getTurnNum();
    //this->blackInc = rhs.getBlackTurn();
-
    this->BoardLayout = rhs.getBoard();
-
    return *this;
 }
 
@@ -82,7 +62,6 @@ void Board::makeMove(int location, player mover)
    
    if (isValidMove(location, mover))
    {
-      //cout << "Setting the owner" << endl;
       locationTile->setOwner(mover);
       //Set the turn for the tile
       if(mover == White)
@@ -100,22 +79,7 @@ void Board::makeMove(int location, player mover)
           locationTile->setTurn(this->getTurnNum());
       }
    }
-   vector<int> flipTiles;
-   flipTiles.clear();
-   Tile *flipTile;
-   for(i = -1; i <= 1; i++)
-   {
-      for(j = -1; j <= 1; j++)
-      {
-         flipTiles = checkDirection(location, mover, i, j);
-         if(flipTiles.size() != 0)
-         {
-            flipTile = &(BoardLayout[flipTiles[i]]);
-            flipTile->setOwner(mover);
-         }
-      }
-   }
-   /*
+
    vector<int> flipTiles;
    Tile *flipTile;
    flipTiles = checkRight(location, mover);
@@ -150,7 +114,7 @@ void Board::makeMove(int location, player mover)
    {
       for(int i = 0; i < flipTiles.size(); i++)
       {
-         flipTile = &(BoardLayout[flipTiles[i]]);
+         flipTile = &(BoardLayout[fliTiles[i]]);
          (flipTile->setOwner(mover));
       }
    }
@@ -189,7 +153,7 @@ void Board::makeMove(int location, player mover)
          flipTile = &(BoardLayout[flipTiles[i]]);
          (flipTile->setOwner(mover));
       }
-   }*/
+   }
 }
 
 bool Board::isValidMove(int location, player mover) {
@@ -200,11 +164,11 @@ bool Board::isValidMove(int location, player mover) {
    row = locationTile->getRow();
    if(locationTile->getOwner() != none)
    {
-      cout << location << " : tile owned" << endl;
+      //cout << location << " : tile owned" << endl;
       return false;
    }
-   
-   
+   // Before checking every move exhaustively, make sure the potential tile
+   // has a neighboring gamepiece.
    int adjacentTiles[8];
    // initialize all of adjacent tiles to -1 to represent when neighbor tiles don't exist because we have reached the edge of the board
    for(int i = 0; i < 8; i++)
@@ -246,7 +210,8 @@ bool Board::isValidMove(int location, player mover) {
    {  
       return false;
    }
-   /*
+   
+   // Call the 8 directional functions
    vector<int> left, right, up, down, rUp, lUp, rDown, lDown;
    right = this->checkRight(location, mover);
    left = this->checkLeft(location, mover);
@@ -255,7 +220,8 @@ bool Board::isValidMove(int location, player mover) {
    rUp = this->checkUpperRight(location,mover);
    lUp = this->checkUpperLeft(location, mover);
    rDown = this->checkLowerRight(location, mover);
-   lDown = this->checkLowerLeft(location, mover);*/
+   lDown = this->checkLowerLeft(location, mover);
+   
    /*
    cout << endl << "right size = " << right.size() << endl;
    cout << "left size = " << left.size() << endl;
@@ -265,36 +231,21 @@ bool Board::isValidMove(int location, player mover) {
    cout << "rdown size = " << rDown.size() << endl;
    cout << "ldown size = " << lDown.size() << endl << endl;*/
    
-   /*if((right.size() != 0) || (left.size() != 0) || (up.size() != 0) || (down.size() != 0) || (rUp.size() != 0) || (lUp.size() != 0) || (rDown.size() != 0) || (lDown.size() != 0))
+   // If any of them are non-empty, the potential move does flip game pieces
+   // and is therefore valid
+   if((right.size() != 0) || (left.size() != 0) || (up.size() != 0) || (down.size() != 0) || (rUp.size() != 0) || (lUp.size() != 0) || (rDown.size() != 0) || (lDown.size() != 0))
    {
       //cout << "tiles did flip" << endl;
       return true;
-   }*/
-   //cout << "Reached the end of is valid" << endl;
-   vector<int> result;
-   for(i = -1; i <= 1; i++)
-   {
-      for(j = -1; j <= 1; j++)
-      {
-         if(i != 0 || j != 0)
-         {
-            cout << "Checking x: " << i << " y: " << j << endl;
-            result = this->checkDirection(location, mover, i, j);
-            if(result.size() != 0)
-            {
-               return true;
-            }
-         }
-         
-      }
    }
-   cout << "Reached end of is valid" << endl;
+
+   //cout << "Reached end of is valid" << endl;
    return false;
 }
 
 bool Board::isGameOver()
 {
-   cout << "In isGameOver" << endl;
+   //cout << "In isGameOver" << endl;
    Tile *locationTile;
    bool boardFull = true;
    int i;
@@ -307,29 +258,29 @@ bool Board::isGameOver()
       locationTile = &(BoardLayout[i]);
       if(locationTile->getOwner() == none)
       {
-         cout << "Board not full" << endl;
+         //cout << "Board not full" << endl;
          boardFull = false;
          break;
       }
    }
    if(boardFull)
    {
-      cout << "Board Full" << endl;
+      //cout << "Board Full" << endl;
       return true;
    }
-   cout << "going into finding valid moves" << endl;
+   //cout << "going into finding valid moves" << endl;
    for(i = 0; i < size * size; i++)
    {
       if(isValidMove(i, White) || isValidMove(i, Black))
       {
-         cout << "Valid move found" << endl;
+         //cout << "Valid move found" << endl;
          return false;
       }
    }
-   cout << "reached end of gameover" << endl;
+   //cout << "reached end of gameover" << endl;
    return true;
 }
-/*
+
 vector<int> Board::checkRight(int location, player mover)
 {
    int size = this->getSize();
@@ -375,7 +326,6 @@ vector<int> Board::checkRight(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkLeft(int location, player mover)
 {
    int size = this->getSize();
@@ -421,7 +371,6 @@ vector<int> Board::checkLeft(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkUp(int location, player mover)
 {
    int size = this->getSize();
@@ -467,7 +416,6 @@ vector<int> Board::checkUp(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkDown(int location, player mover)
 {
    int size = this->getSize();
@@ -514,7 +462,6 @@ vector<int> Board::checkDown(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkUpperRight(int location, player mover)
 {
    int size = this->getSize();
@@ -541,7 +488,6 @@ vector<int> Board::checkUpperRight(int location, player mover)
          break;
       }
    }
-
    // if we found a friendly tile above and to the right of ours.
    if(pivotTile != NULL)
    {
@@ -566,7 +512,6 @@ vector<int> Board::checkUpperRight(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkUpperLeft(int location, player mover)
 {
    int size = this->getSize();
@@ -595,7 +540,6 @@ vector<int> Board::checkUpperLeft(int location, player mover)
    {
       // From one less than the original row to one more than the pivot row
       // and from one less than the original column to one more than the pivot column
-
       for(i = row - 1, j = column - 1; i > pivotRow, j > pivotColumn; i--, j--)
       {
          nextTileNum  = getTileLocation(i, j);
@@ -615,7 +559,6 @@ vector<int> Board::checkUpperLeft(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkLowerRight(int location, player mover)
 {
    int size = this->getSize();
@@ -644,7 +587,6 @@ vector<int> Board::checkLowerRight(int location, player mover)
    {
       // From one less than the original row to one more than the pivot row
       // and from one less than the original column to one more than the pivot column
-
       for(i = row + 1, j = column + 1; i < pivotRow, j < pivotColumn; i++, j++)
       {
          nextTileNum  = getTileLocation(i, j);
@@ -664,7 +606,6 @@ vector<int> Board::checkLowerRight(int location, player mover)
    }
    return flipTiles;
 }
-
 vector<int> Board::checkLowerLeft(int location, player mover)
 {
    int size = this->getSize();
@@ -713,146 +654,7 @@ vector<int> Board::checkLowerLeft(int location, player mover)
    }
    return flipTiles;
 }
-*/
 
-
-vector<int> Board::checkDirection(int location, player mover, int x, int y)
-{
-   Tile *locationTile = &(BoardLayout[location]);
-   Tile *nextTile;
-   Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
-   
-   int row, column;
-   row = locationTile->getRow();
-   column = locationTile->getColumn();
-   
-   int pivotColumn, pivotRow, nextTileNum, size;
-   vector<int> flipTiles;
-   size = this->getSize();
-   int i, j;
-   cout << "Finding Pivot for " << location << endl;
-   for(i = row + x, j = column + y; i >= 0 && i < size && j >= 0 && j < size; i += x, j += y )
-   {
-      nextTile = &(BoardLayout[getTileLocation(i,j)]);
-      // search for next Same color tile but no further
-      if(nextTile->getOwner() == mover)
-      {
-         cout << "Pivot Found : " << i << " , " << j << endl;
-         pivotRow = i;
-         pivotColumn = j;
-         pivotTile = nextTile;
-         break;
-      }
-   }
-   if(pivotTile != NULL)
-   {
-      if(pivotRow <= row)
-      {
-         cout << "pivotRow was less than or equal to row" << endl;
-         for(i = row + x; i > pivotRow; i += x)
-         {
-            if(pivotColumn <= column)
-            {
-               cout << "pivotColumn was less or equal to column" << endl;
-               for(j = column + y; j > pivotColumn; j += y)
-               {
-                  nextTileNum  = getTileLocation(i, j);
-                  cout << "     check " << nextTileNum << endl;
-                  nextTile = &(BoardLayout[nextTileNum]);
-                  // If the tile is the enemy color, push back the number representing the position.
-                  if (nextTile->getOwner() != mover && nextTile->getOwner() != none)
-                  {
-                     
-                     if(nextTile->getOwner() != mover)
-                     {
-                        cout << "Enemy tile found" << endl;
-                     }
-                     
-                     flipTiles.push_back(nextTileNum);
-                  }
-                  // otherwise we have a gap so clear the vector and return it.
-                  else 
-                  {
-                     flipTiles.clear();
-                     return flipTiles;
-                  }
-               }
-            }
-            else if (pivotColumn > column)
-            {
-               cout << "PivotColumn was greater than column" << endl;
-               for(j = column + y; j > column && j < pivotColumn; j += y)
-               {
-                  nextTileNum  = getTileLocation(i, j);
-                  cout << "     check " << nextTileNum << endl;
-                  nextTile = &(BoardLayout[nextTileNum]);
-                  // If the tile is the enemy color, push back the number representing the position.
-                  if (nextTile->getOwner() != mover && nextTile->getOwner() != none)
-                  {
-                     flipTiles.push_back(nextTileNum);
-                  }
-                  // otherwise we have a gap so clear the vector and return it.
-                  else 
-                  {
-                     flipTiles.clear();
-                     return flipTiles;
-                  }
-               }
-            }
-         }
-      }
-      else if(pivotRow > row)
-      {
-         cout << "PivotRow was greater than row" << endl;
-         for(i = row + x; i < pivotRow; i += x)
-         {
-            if(pivotColumn <= column)
-            {
-               cout << "PivotColumn was less than or equal to column" << endl;
-               for(j = column + y; j > pivotColumn; j += y)
-               {
-                  nextTileNum  = getTileLocation(i, j);
-                  cout << "     check " << nextTileNum << endl; 
-                  nextTile = &(BoardLayout[nextTileNum]);
-                  // If the tile is the enemy color, push back the number representing the position.
-                  if (nextTile->getOwner() != mover && nextTile->getOwner() != none)
-                  {
-                     flipTiles.push_back(nextTileNum);
-                  }
-                  // otherwise we have a gap so clear the vector and return it.
-                  else 
-                  {
-                     flipTiles.clear();
-                     return flipTiles;
-                  }
-               }
-            }
-            else if (pivotColumn > column)
-            {
-               cout << "PivotColumn was greater than column " << endl;
-               for(j = column + y; j < pivotColumn; j += y)
-               {
-                  nextTileNum  = getTileLocation(i, j);
-                  cout << "     check " << nextTileNum << endl;   
-                  nextTile = &(BoardLayout[nextTileNum]);
-                  // If the tile is the enemy color, push back the number representing the position.
-                  if (nextTile->getOwner() != mover && nextTile->getOwner() != none)
-                  {
-                     flipTiles.push_back(nextTileNum);
-                  }
-                  // otherwise we have a gap so clear the vector and return it.
-                  else 
-                  {
-                     flipTiles.clear();
-                     return flipTiles;
-                  }
-               }
-            }
-         }
-      }
-   } 
-   return flipTiles;
-}
 
 void Board::printBoard()
 {
@@ -930,16 +732,6 @@ int main()
    Board reversiBoard;
    reversiBoard.printBoard();
    size = reversiBoard.getSize();
-   // Checks up
-   if(reversiBoard.isValidMove(43, White))
-      cout << "valid" << endl;
-   else 
-      cout << "not valid" <<endl;
-   // checks right
-   if(reversiBoard.isValidMove(34, White))
-      cout << "valid" << endl;
-   else 
-      cout << "not valid" <<endl;
    //reversiBoard->makeMove(34, White);
    //reversiBoard->printBoard();
    //cout << "Checking to see if game is over" << endl;
@@ -988,4 +780,3 @@ int main()
    }
    return 0;
 }
-
