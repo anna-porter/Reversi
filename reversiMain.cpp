@@ -7,23 +7,22 @@
 // Real main based off of ORR and CRR
 
 #include "reversi.h"
- 
+#include <climits>
+#include <stdlib.h> 
 extern const int numAgents;
 extern int (*agentFunc[])(const Board &, player);
 extern string agentStr[];
+int reversiAgentRandom(const Board &board, player whichPlayer);
+int randomInt(int n);
 
-//int reversiAgentRandom(const Board &board, player whichPlayer);
-//int reversiAgentRandomClone(const Board &board, player whichPlayer);
-
-
-char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*agentBlack)(const Board&, player whichPlayer), Board& reversiBoard);
+char playReversiGame(Board& reversiBoard);
 
 int main()
 {
    char result;
-   int  i, j, boardSize, numWinsWhite[numAgents], numWinsBlack[numAgents],
-       numLossesWhite[numAgents], numLossesBlack[numAgents], /*numMoves[numAgents],*/ order[numAgents], numInvalid[numAgents], temp;
-
+   int boardSize; /*i, j, numWinsWhite[numAgents], numWinsBlack[numAgents],
+       numLossesWhite[numAgents], numLossesBlack[numAgents], numMoves[numAgents], order[numAgents], numInvalid[numAgents], tem*/;
+   srandom(time(0));
    Board *reversiBoard;
 
    //BOARD SIZE DECLARATION HERE
@@ -31,7 +30,7 @@ int main()
    
    cout << "Research Project: Reversi\n"
         << "Results\n\n";
-
+/*
    // intializes the arrays that will be used to sort for the top player
    for (i = 0; i < numAgents; i += 1)
    {
@@ -43,19 +42,19 @@ int main()
       // added initialization
       numInvalid[i] = 0;
    }
-
+*/
    // plays the game with all of the available agents and prints the board once like orr
       // needs to be messed with
-   for (i = 0; i < numAgents; i += 1)
+/*   for (i = 0; i < numAgents; i += 1)
    {
       for (j = 0; j < numAgents; j += 1)
-      {
-         if (i != j)
+      {*/
+        /* if (i != j)*/
          {
             //cout << "Current board size is " << boardSize << "x" << boardSize << "\n";
             reversiBoard = new Board(boardSize);
-            cout << "player A = " << agentStr[i] << ", player B = " << agentStr[j];
-            result = playReversiGame(agentFunc[i], agentFunc[j], *reversiBoard);
+            //cout << "player A = " << agentStr[i] << ", player B = " << agentStr[j];
+            result = playReversiGame(*reversiBoard);
             //numMoves[i] += reversiBoard->getTurn();
             //numMoves[j] += reversiBoard->getTurn();
             //cout << "\nFinal Board State: \n";
@@ -63,35 +62,38 @@ int main()
             cout << "\n";
             if (result == 'A')
             {
-               cout << "A";
-               numWinsWhite[i] += 1;
-               numLossesBlack[j] += 1;
+               cout << "White is the winner!\n\n";
+               //numWinsWhite[i] += 1;
+               //numLossesBlack[j] += 1;
             }
             else if (result == 'B')
             {
-               cout << "B";
-               numLossesWhite[i] += 1;
-               numWinsBlack[j] += 1;
+               cout << "Black is the winner!\n\n";
+               //numLossesWhite[i] += 1;
+               //numWinsBlack[j] += 1;
             }
             else if (result == 'C')
             {
-               cout << "B played an invalid move! A";
-               numWinsWhite[i] += 1;
-               numLossesBlack[j] +=1;
-               numInvalid[j] += 1;
+               cout << "White played an invalid move! Black is the winner!\n\n";
+               //numWinsWhite[i] += 1;
+               //numLossesBlack[j] +=1;
+               //numInvalid[j] += 1;
             }
-            else
+            else if (result == 'D')
             {
-               cout << "A played an invalid move! B";
-               numLossesWhite[i] += 1;
-               numWinsBlack[j] += 1;
-               numInvalid[i] += 1;
+               cout << "Black played an invalid move! White is the winner!\n\n";
+               //numLossesWhite[i] += 1;
+              // numWinsBlack[j] += 1;
+               //numInvalid[i] += 1;
             }
-            cout << " is the winner!\n\n";
+            else 
+            {
+               cout << "The game resulted in a tie!" << endl << endl;
+            }
             delete reversiBoard;
          }
-      }
-   }
+     /* }
+   }*/
 
 //      gameCount -= 1;
 //      boardSize += 1;
@@ -100,6 +102,7 @@ int main()
       sort the agents based on total number of wins, then games as A, games as B and then the
       total number of moves made
    */
+   /*
    for (i = 0; i < numAgents; i += 1)
    {
       order[i] = i;
@@ -109,10 +112,10 @@ int main()
    {
       for (j = i + 1; j < numAgents; j += 1)
       {
-         if (numWinsWhite[order[i]] + numWinsBlack[order[i]] < numWinsWhite[order[j]] + numWinsBlack[order[j]] || numWinsWhite[order[i]] + numWinsBlack[order[i]] == numWinsWhite[order[j]] + numWinsBlack[order[j]] /*&&
+         if (numWinsWhite[order[i]] + numWinsBlack[order[i]] < numWinsWhite[order[j]] + numWinsBlack[order[j]] || numWinsWhite[order[i]] + numWinsBlack[order[i]] == numWinsWhite[order[j]] + numWinsBlack[order[j]] &&
              (numMoves[order[i]] > numMoves[order[j]] || numMoves[order[i]] == numMoves[order[j]]  &&
-              agentStr[order[i]] >= agentStr[order[j]]))*/) // sort the agents from best to worst
-         {
+              agentStr[order[i]] >= agentStr[order[j]])))*/ // sort the agents from best to worst
+     /*    {
             temp = order[i];
             order[i] = order[j];
             order[j] = temp;
@@ -146,12 +149,12 @@ int main()
            << " " << setw(8) << right << numInvalid[order[i]] 
            << " " << setprecision(5) << setw(11) << right << ratio << "\n";
    }
-
+*/
    return 0;
 }
 
 // needs to be written
-char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*agentBlack)(const Board&, player whichPlayer), Board& reversiBoard)
+char playReversiGame(Board& reversiBoard)
 {
    char result = 'A'; // compiler complains without an initialization
 
@@ -160,12 +163,12 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
    {
       // player A goes first, if they still have valid moves,
       // Otherwise, pass to black
-      if(reversiBoard.getValidMoves(White).size() != 0)
+      if(reversiBoard.getValidMoves(Black).size() != 0)
       {
-         int playerWhite_move = (*agentWhite)(reversiBoard, White);
+         int playerWhite_move = reversiAgentRandom(reversiBoard, Black);
          
          //if it is an invalid move, B automatically wins
-         if(!reversiBoard.isValidMove(playerWhite_move, White))
+         if(!reversiBoard.isValidMove(playerWhite_move, Black))
          {
             // Let's let 'D' represent that player B won because of A's invalid move
             result = 'D';
@@ -175,7 +178,7 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
          // Update the board for player A
          else
          {
-            reversiBoard.makeMove(playerWhite_move, White);
+            reversiBoard.makeMove(playerWhite_move, Black);
             reversiBoard.printBoard();
          }
 
@@ -184,6 +187,9 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
          {
             pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
+            // White is first in this pair.
+            cout << "White: " << finalScore.first << endl;
+            cout << "Black: " << finalScore.second << endl;
             if(finalScore.first > finalScore.second)
             {
                result = 'A';
@@ -192,16 +198,22 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
             {
                result = 'B';
             }
-
+            else
+            {
+               result = 'E';
+            }
             return result;
          }
       }
-      if(reversiBoard.getValidMoves(Black).size() != 0)
+      else {
+         cout << "Black has no valid moves and passes to White" << endl << endl;
+      }
+      if(reversiBoard.getValidMoves(White).size() != 0)
       {
-         int playerBlack_move = (*agentBlack)(reversiBoard, Black);
+         int playerBlack_move = reversiAgentRandom(reversiBoard, White);
 
          // if it is an invalid move, A automatically wins
-         if(!reversiBoard.isValidMove(playerBlack_move, Black))
+         if(!reversiBoard.isValidMove(playerBlack_move, White))
          {
             // Let's let 'C' represent that A won because of B's invalid move
             result = 'C';
@@ -211,7 +223,7 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
          // Update the board for player B
          else
          {
-            reversiBoard.makeMove(playerBlack_move, Black);
+            reversiBoard.makeMove(playerBlack_move, White);
             reversiBoard.printBoard();
          }
 
@@ -220,6 +232,9 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
          {
             pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
+            cout << "White: " << finalScore.first << endl;
+            cout << "Black: " << finalScore.second << endl;
+            // White is first in this pair
             if(finalScore.first > finalScore.second)
             {
                result = 'A';
@@ -228,12 +243,46 @@ char playReversiGame(int (*agentWhite)(const Board&, player whichPlayer), int (*
             {
                result = 'B';
             }
+            else
+            {
+               result = 'E';
+            }
 
             return result;
          }
+      }
+      else {
+         cout << "White has no moves, and passes to Black" << endl << endl;
       }
 
    }
 
    return result;
+}
+
+int reversiAgentRandom(const Board &board, player whichPlayer)
+{
+   vector<int> availableMoves;
+   Board copy;
+   copy = board;
+   availableMoves = copy.getValidMoves(whichPlayer);
+   int randomMove;
+   randomMove = randomInt(availableMoves.size());
+   return availableMoves.at(randomMove);
+
+}
+int randomInt(int n)
+{
+   // Return a random integer between 0 and n - 1.
+   int r;
+   if (n <= 0)
+   {
+      return 0;
+   }
+   do
+   {
+      r = random();
+   }
+   while (r >= INT_MAX / n * n);
+   return r / (INT_MAX / n);
 }
