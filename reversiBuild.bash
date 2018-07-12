@@ -21,44 +21,44 @@ then
    exit 1
 fi
 
-for fileName in ${challenge}Agent?*.cpp
-do
-   funcName="${fileName%.cpp}"
-   agentName="${funcName#${challenge}Agent}"
-   validAgentNameFormat='^[A-Z][0-9A-Za-z]*$'
-   if [[ "${#agentName}" -le 20 && "${agentName}" =~ ${validAgentNameFormat} ]]
-   then
-      if ! grep "#include \"${challenge}.h\"" "${fileName}" > /dev/null
-      then
-         echo " * ${fileName}: No #include \"${challenge}.h\" found; skipping compilation."
-      elif ! grep -w "${funcName}" "${fileName}" > /dev/null
-      then
-         echo " * ${fileName}: No ${funcName} function found; skipping compilation."
-      else
-         echo " * ${fileName}: Compiling . . ."
-         if ${CXX} ${CXXFLAGS} -c "${fileName}"
-         then
-            echo " * ${fileName}: Compilation succeeded."
-            funcNames="${funcNames} ${funcName}"
-            objectFiles="${objectFiles} ${funcName}.o"
-            (( numAgents += 1 ))
-         else
-            echo " * ${fileName}: Compilation failed; skipping agent ${agentName}."
-         fi
-      fi
-   else
-      echo " * ${fileName}: Invalid agent name; skipping compilation."
-   fi
-done
+#for fileName in ${challenge}Agent?*.cpp
+#do
+#   funcName="${fileName%.cpp}"
+#   agentName="${funcName#${challenge}Agent}"
+#   validAgentNameFormat='^[A-Z][0-9A-Za-z]*$'
+#   if [[ "${#agentName}" -le 20 && "${agentName}" =~ ${validAgentNameFormat} ]]
+#   then
+#      if ! grep "#include \"${challenge}.h\"" "${fileName}" > /dev/null
+#      then
+#         echo " * ${fileName}: No #include \"${challenge}.h\" found; skipping compilation."
+#      elif ! grep -w "${funcName}" "${fileName}" > /dev/null
+#      then
+#         echo " * ${fileName}: No ${funcName} function found; skipping compilation."
+#      else
+#         echo " * ${fileName}: Compiling . . ."
+#         if ${CXX} ${CXXFLAGS} -c "${fileName}"
+#         then
+#            echo " * ${fileName}: Compilation succeeded."
+#            funcNames="${funcNames} ${funcName}"
+#            objectFiles="${objectFiles} ${funcName}.o"
+#            (( numAgents += 1 ))
+#         else
+#            echo " * ${fileName}: Compilation failed; skipping agent ${agentName}."
+#         fi
+#      fi
+#   else
+#     echo " * ${fileName}: Invalid agent name; skipping compilation."
+#   fi
+#done
 
-echo " * ${numAgents} agents found."
-if (( numAgents < 1 ))
-then
-   echo " * At least one agent (e.g., ${challenge}AgentSmith.cpp) is needed."
-   echo " * Build failed."
-   rm *.o
-   exit 2
-fi
+#echo " * ${numAgents} agents found."
+#if (( numAgents < 1 ))
+#then
+#   echo " * At least one agent (e.g., ${challenge}AgentSmith.cpp) is needed."
+#   echo " * Build failed."
+#   rm *.o
+#   exit 2
+#fi
 
 cat >| "${challenge}Funcs.cpp" << END
 #include "${challenge}.h"
@@ -146,4 +146,3 @@ else
 fi
 
 rm *.o
- 
