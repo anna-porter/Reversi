@@ -338,6 +338,7 @@ vector<int> Board::checkRight(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkLeft(int location, player mover)
 {
    Tile *locationTile = &(BoardLayout[location]);
@@ -382,6 +383,7 @@ vector<int> Board::checkLeft(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkUp(int location, player mover)
 {
    Tile *locationTile = &(BoardLayout[location]);
@@ -426,6 +428,7 @@ vector<int> Board::checkUp(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkDown(int location, player mover)
 {
    int size = this->getSize();
@@ -472,6 +475,7 @@ vector<int> Board::checkDown(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkUpperRight(int location, player mover)
 {
    int size = this->getSize();
@@ -479,18 +483,18 @@ vector<int> Board::checkUpperRight(int location, player mover)
    Tile *locationTile = &(BoardLayout[location]);
    Tile *nextTile;
    Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
-   int row, column, pivotColumn, /*pivotRow,*/ nextTileNum;
+   int row, column, pivotColumn, pivotRow, nextTileNum;
    row = locationTile->getRow();
    column = locationTile->getColumn();
    vector<int> flipTiles;
    int i, j;
-   for(i = row - 1, j = column + 1; /*i >= 0,*/ j < size; i--, j++)
+   for(i = row - 1, j = column + 1; i >= 0 && j < size; i--, j++)
    {
       nextTile = &(BoardLayout[getTileLocation(i, j)]);
       // search for next Same color tile but no further
       if(nextTile->getOwner() == mover)
       {
-         //pivotRow = i;
+         pivotRow = i;
          pivotColumn = j;
          pivotTile = nextTile;
          //cout << "pivotRow = " << pivotRow << endl;
@@ -503,7 +507,7 @@ vector<int> Board::checkUpperRight(int location, player mover)
    {
       // From one less than the original row to one more than the pivot row
       // and from one more than the original column to one less than the pivot column
-      for(i = row - 1, j = column + 1; /*i > pivotRow,*/ j < pivotColumn; i--, j++)
+      for(i = row - 1, j = column + 1; i > pivotRow && j < pivotColumn; i--, j++)
       {
          nextTileNum  = getTileLocation(i, j);
          nextTile = &(BoardLayout[nextTileNum]);
@@ -522,23 +526,24 @@ vector<int> Board::checkUpperRight(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkUpperLeft(int location, player mover)
 {
    Tile *locationTile = &(BoardLayout[location]);
    Tile *nextTile;
    Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
-   int row, column, pivotColumn, /*pivotRow,*/ nextTileNum;
+   int row, column, pivotColumn, pivotRow, nextTileNum;
    row = locationTile->getRow();
    column = locationTile->getColumn();
    vector<int> flipTiles;
    int i, j;
-   for(i = row - 1, j = column - 1; /*i >= 0,*/ j >= 0; i--, j--)
+   for(i = row - 1, j = column - 1; i >= 0 && j >= 0; i--, j--)
    {
       nextTile = &(BoardLayout[getTileLocation(i,j)]);
       // search for next Same color tile but no further
       if(nextTile->getOwner() == mover)
       {
-         //pivotRow = i;
+         pivotRow = i;
          pivotColumn = j;
          pivotTile = nextTile;
          break;
@@ -549,7 +554,7 @@ vector<int> Board::checkUpperLeft(int location, player mover)
    {
       // From one less than the original row to one more than the pivot row
       // and from one less than the original column to one more than the pivot column
-      for(i = row - 1, j = column - 1; /*i > pivotRow,*/ j > pivotColumn; i--, j--)
+      for(i = row - 1, j = column - 1; i > pivotRow && j > pivotColumn; i--, j--)
       {
          nextTileNum  = getTileLocation(i, j);
          nextTile = &(BoardLayout[nextTileNum]);
@@ -568,24 +573,25 @@ vector<int> Board::checkUpperLeft(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkLowerRight(int location, player mover)
 {
    int size = this->getSize();
    Tile *locationTile = &(BoardLayout[location]);
    Tile *nextTile;
    Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
-   int row, column, pivotColumn, /*pivotRow,*/ nextTileNum;
+   int row, column, pivotColumn, pivotRow, nextTileNum;
    row = locationTile->getRow();
    column = locationTile->getColumn();
    vector<int> flipTiles;
    int i, j;
-   for(i = row + 1, j = column + 1; /*i < size,*/ j < size; i++, j++)
+   for(i = row + 1, j = column + 1; i < size && j < size; i++, j++)
    {
       nextTile = &(BoardLayout[getTileLocation(i,j)]);
       // search for next Same color tile but no further
       if(nextTile->getOwner() == mover)
       {
-         //pivotRow = i;
+         pivotRow = i;
          pivotColumn = j;
          pivotTile = nextTile;
          break;
@@ -596,7 +602,7 @@ vector<int> Board::checkLowerRight(int location, player mover)
    {
       // From one less than the original row to one more than the pivot row
       // and from one less than the original column to one more than the pivot column
-      for(i = row + 1, j = column + 1; /*i < pivotRow,*/ j < pivotColumn; i++, j++)
+      for(i = row + 1, j = column + 1; i < pivotRow && j < pivotColumn; i++, j++)
       {
          nextTileNum  = getTileLocation(i, j);
          nextTile = &(BoardLayout[nextTileNum]);
@@ -615,24 +621,25 @@ vector<int> Board::checkLowerRight(int location, player mover)
    }
    return flipTiles;
 }
+
 vector<int> Board::checkLowerLeft(int location, player mover) 
 {
-   //int size = this->getSize();
+   int size = this->getSize();
    Tile *locationTile = &(BoardLayout[location]);
    Tile *nextTile;
    Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
-   int row, column, pivotColumn, /*pivotRow,*/ nextTileNum;
+   int row, column, pivotColumn, pivotRow, nextTileNum;
    row = locationTile->getRow();
    column = locationTile->getColumn();
    vector<int> flipTiles;
    int i, j;
-   for(i = row + 1, j = column - 1; /*i < size*/ j >= 0; i++, j--)
+   for(i = row + 1, j = column - 1; i < size && j >= 0; i++, j--)
    {
       nextTile = &(BoardLayout[getTileLocation(i,j)]);
       // search for next Same color tile but no further
       if(nextTile->getOwner() == mover)
       {
-         //pivotRow = i;
+         pivotRow = i;
          pivotColumn = j;
          pivotTile = nextTile;
          break;
@@ -644,7 +651,7 @@ vector<int> Board::checkLowerLeft(int location, player mover)
       // From one less than the original row to one more than the pivot row
       // and from one more than the original column to one less than the pivot column
    
-      for(i = row + 1, j = column - 1; /*i < pivotRow,*/ j > pivotColumn; i++, j--)
+      for(i = row + 1, j = column - 1; i < pivotRow && j > pivotColumn; i++, j--)
       {
          nextTileNum  = getTileLocation(i, j);
          nextTile = &(BoardLayout[nextTileNum]);
@@ -675,6 +682,7 @@ void Board::printBoard()
    //cout << " 0  1  2  3  4  5  6  7" << endl;
    //int rowCount = 1;
    //cout << " 0 ";
+   cout << endl;
    for(i = 0; i < size*size; i++)
    {
       if(i % size == 0 && i > 0)
@@ -696,6 +704,7 @@ void Board::printBoard()
          cout << "   ";
       }
    }
+   cout << endl;
    cout << endl;
 }
 
