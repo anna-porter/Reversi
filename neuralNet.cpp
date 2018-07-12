@@ -11,26 +11,37 @@ double randomDouble();
 class NeuralNet
 {
    private:
-   // first vector contains the number of layers.
-   // deepest vector contains the weights
-   //layer, neuron, weights
+   // between which neurons the weight is (layer)
+   // what the final destination neuron is
+   // what origin neuron it came from.
       vector<vector<vector<double> > > weights;
    public:
-      NeuralNet(vector<int>);
-      NeuralNet();
-      vector<vector<vector<double> > > getWeights() {return weights;}
-      NeuralNet* crossover(NeuralNet*&);
+      NeuralNet(vector<unsigned int>);
+      //NeuralNet();
+      vector<vector<vector<double> > > getWeights() const {return weights;}
+      NeuralNet* crossover(NeuralNet*&, vector<unsigned int>);
       void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
-      void printWeights(NeuralNet*&);
+      //void printWeights(NeuralNet*&);
+      double calculateNet(NeuralNet*&, vector<double>);
+      NeuralNet& operator=(const NeuralNet &rhs);
       // takes in another member of this class
       // returns a brand new neural net that is the offspring of the two parents
       // *this and the new one as a parameter by ref and const
       // Also need a calculate function
 };
+
+NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
+{
+   this->weights.clear();
+   this->weights = rhs.getWeights();
+   return *this;
+}
+
+/*
 NeuralNet::NeuralNet()
 {
    // hahaha idk man
-}
+}*/
 
 // constructors
 
@@ -40,31 +51,35 @@ NeuralNet::NeuralNet()
 // layerSizes = (3, 2, 1)
 // layer 1 has 2 nodes each with 3 inputs
 
-NeuralNet::NeuralNet(vector<int> layerSizes)
+NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
 {
-   srandom(time(0)); 
-   int i, j, k;
+ 
+   unsigned int i, destination, origin;
    vector<double> tempNeuron;
    vector<vector<double> > tempLayer;
    double randomNum;
-   srandom(time(0)); // seed the random number generator.
-   
-   // Start at 1 since the first number in layerSizes only represents the number of inputs
-   // The number i represents should be the number of neurons we are currently making.
-   for(i = 1; i < layerSizes.size(); i++)
+   // loops the same number of times as the number of layers we have. 
+   for(i = 0; i < layerSizes.size(); i++)
    {
-      tempNeuron.clear();
-      // next for loop should populate a neuron with weights
-      // the number of weights is the previous value of layerSize
-      for(j = 0; j < layerSizes.at(i - 1); j++)
+      if(i + 1 < layerSizes.size())
       {
-         randomNum = randomDouble();
-         tempNeuron.push_back(randomNum);
+         // Loops the same number of times as the number of neurons the next layer has
+         for(destination = 1; destination <= layerSizes.at(i + 1); destination++)
+         {
+            // Loops the same number of times as we had inputs from the previous layer
+            // starting at 0 so we include the bias weights
+            for(origin = 0; origin <= layerSizes.at(i); origin++)
+            {
+               randomNum = randomDouble();
+               tempNeuron.push_back(randomNum);
+            }
+            tempLayer.push_back(tempNeuron);
+            tempNeuron.clear();
+         }
       }
-      //Our neuron is now full and ready to be added to the layer
-      tempLayer.push_back(tempNeuron);
+      weights.push_back(tempLayer);
+      tempLayer.clear();
    }
-   weights.push_back(tempLayer);
 }
 
 double randomDouble()
@@ -94,48 +109,105 @@ int coinFlip()
 
 int main()
 {
-   vector<int> layerSizesTest;
-   layerSizesTest.push_back(4);
+   srandom(time(0)); // seed the random number generator.
+   vector<unsigned int> layerSizesTest;
    layerSizesTest.push_back(3);
+   layerSizesTest.push_back(2);
    layerSizesTest.push_back(1);
-   NeuralNet *network;
-   network = new NeuralNet(layerSizesTest);
+   //NeuralNet *network;
+   //network = new NeuralNet(layerSizesTest);
+
    NeuralNet *mother = new NeuralNet(layerSizesTest);
    NeuralNet *father = new NeuralNet(layerSizesTest);
-   printWeights(mother);
-   printWeights(father);
-   NeuralNet *child = mother->crossover(father);
    
+   
+   vector<vector<vector<double> > > testWeights;
+   testWeights = mother->getWeights();
+   cout << "Mother: " << endl;
+   unsigned int i, j, k;
+   cout.precision(17);
+   for(i = 0; i < testWeights.size(); i++)
+   {
+      for(j = 0; j < testWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
+         {
+            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
+         }
+         cout << endl;
+      }
+      cout << endl;
+   }
+   testWeights = father->getWeights();
+   cout << "father: " << endl;
+   cout.precision(17);
+   for(i = 0; i < testWeights.size(); i++)
+   {
+      for(j = 0; j < testWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
+         {
+            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
+         }
+         cout << endl;
+      }
+      cout << endl;
+   }
+   //this->printWeights(mother);
+   //this->printWeights(father);
+   //printWeights(mother);
+   NeuralNet *child = mother->crossover(father, layerSizesTest);
+   
+   testWeights = child->getWeights();
+   cout << "child: " << endl;
+   cout.precision(17);
+   for(i = 0; i < testWeights.size(); i++)
+   {
+      for(j = 0; j < testWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
+         {
+            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
+         }
+         cout << endl;
+      }
+      cout << endl;
+   }
    return 0;
 }
 
-NeuralNet* NeuralNet::crossover(NeuralNet*& mother)
+NeuralNet* NeuralNet::crossover(NeuralNet*& mother, vector<unsigned int> parentShape)
 {
    NeuralNet *father = this;
    vector<vector<vector<double> > > motherWeights = mother->getWeights();
-   //The size of the first vector is the first number of a layerSize vector;
-   vector<int> layerSizeOfParents;
-   int i;
-   /*cout << motherWeights.size() << endl;
-   cout << motherWeights.at(0).size() << endl;
-   cout << motherWeights.at(0).at(0).size() << endl;
-   */
-   // Try to determine the shape of the parent
-   for(i = 0; i < motherWeights.at(0).size(); i++)
+   vector<vector<vector<double> > > fatherWeights = father->getWeights();
+
+   unsigned int i, j, k;
+   double gene;
+   int coin;
+   //motherWeights.size() is the size of layerSize when it created the net
+   NeuralNet *child = new NeuralNet(parentShape);
+   // ya just. like. ya fathah.
+   child = father;
+   for(i = 0; i < motherWeights.size(); i++)
    {
-      layerSizeOfParents.push_back(motherWeights.at(0).at(i).size());
+      for(j = 0; j < motherWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
+         {
+            coin = coinFlip();
+            if(coin == 0)
+            {
+               cout << "I got it from mom" << endl;
+               gene = motherWeights.at(i).at(j).at(k);
+            }
+            child->weights.at(i).at(j).at(k) = gene;
+         }
+      }
    }
-   // The last one should be one since we only use one output neuron
-   layerSizeOfParents.push_back(1);
-   /*for(i = 0; i < layerSizeOfParents.size(); i++)
-   {
-      cout << layerSizeOfParents.at(i) << " , ";
-   }
-   cout << endl;*/
-   NeuralNet *child = new NeuralNet(layerSizeOfParents);
-   
    return child;
 }
+/*
 void NeuralNet::printWeights(NeuralNet*& network)
 {
    vector<vector<vector<double> > > testWeights;
@@ -153,7 +225,13 @@ void NeuralNet::printWeights(NeuralNet*& network)
       }
       cout << endl;
    }
+}*/
+
+double NeuralNet::calculateNet(NeuralNet*& network, vector<double> input)
+{
+   return 0;
 }
+
 // create a neuron that is a vector of doubles, push bakck one by one to create a layer. when the layer
 // is done, push that back onto the big vector
 
