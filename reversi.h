@@ -19,6 +19,7 @@ private:
 
 public:
    Tile(int location, int size);
+   Tile(){}
    player getOwner() const{return owner;}
    void setOwner(player takenBy) {owner = takenBy;}
    int getTurn() const{return turn;}
@@ -38,6 +39,7 @@ public:
    Board(const Board &copy);
    void makeMove(int location, player mover); // Update the board with a player's move.
    bool isValidMove(int location, player mover);
+   Tile getTile(int i) {return BoardLayout.at(i);}
    bool isGameOver(); 
    void printBoard();// const;
    int getSize() const {return size;}
