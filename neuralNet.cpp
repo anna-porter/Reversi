@@ -1,34 +1,19 @@
 #include<vector>
 #include<iostream>
-#include <climits>
-#include <stdlib.h> 
-using namespace std;
+#include<climits>
+#include<cstdlib> 
+#include<cmath> 
+#include "reversi.h"
+#include "neuralNet.h" 
 
+using namespace std;
+//f(x) = x / (1 + abs(x))
 int coinFlip();
 double randomDouble();
+int randomInt(int n);
+int reversiAgentOneMove(Board reversiBoard, player mover, NeuralNet network);
 // weight storage
 // blondie24 page 41
-class NeuralNet
-{
-   private:
-   // between which neurons the weight is (layer)
-   // what the final destination neuron is
-   // what origin neuron it came from.
-      vector<vector<vector<double> > > weights;
-   public:
-      NeuralNet(vector<unsigned int>);
-      //NeuralNet();
-      vector<vector<vector<double> > > getWeights() const {return weights;}
-      NeuralNet* crossover(NeuralNet*&, vector<unsigned int>);
-      void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
-      //void printWeights(NeuralNet*&);
-      double calculateNet(NeuralNet*&, vector<double>);
-      NeuralNet& operator=(const NeuralNet &rhs);
-      // takes in another member of this class
-      // returns a brand new neural net that is the offspring of the two parents
-      // *this and the new one as a parameter by ref and const
-      // Also need a calculate function
-};
 
 NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
 {
@@ -36,6 +21,7 @@ NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
    this->weights = rhs.getWeights();
    return *this;
 }
+
 
 /*
 NeuralNet::NeuralNet()
@@ -84,8 +70,8 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
 
 double randomDouble()
 {
-   int r = random();
-   double randDouble = static_cast<double>(r) / static_cast<double>(INT_MAX);
+      int r = random();
+   double randDouble = static_cast<double>(r) / INT_MAX;
    int coin;
    coin = coinFlip();
    if(coin == 1)
@@ -97,7 +83,6 @@ double randomDouble()
 
 int coinFlip()
 {
-   // Return a random integer between 0 and n - 1.
    int r;
    do
    {
@@ -107,88 +92,113 @@ int coinFlip()
    return r / (INT_MAX / 2);
 }
 
+int randomInt(int n)
+{
+   int r;
+   do
+   {
+      r = random();
+   }
+   while (r >= INT_MAX / n * n);
+   return r / (INT_MAX / n);
+}
+
 int main()
 {
    srandom(time(0)); // seed the random number generator.
    vector<unsigned int> layerSizesTest;
+   //layerSizesTest.push_back(4);
    layerSizesTest.push_back(3);
    layerSizesTest.push_back(2);
    layerSizesTest.push_back(1);
    //NeuralNet *network;
    //network = new NeuralNet(layerSizesTest);
 
-   NeuralNet *mother = new NeuralNet(layerSizesTest);
-   NeuralNet *father = new NeuralNet(layerSizesTest);
+   NeuralNet mother = NeuralNet(layerSizesTest);
+   NeuralNet father = NeuralNet(layerSizesTest);
    
    
    vector<vector<vector<double> > > testWeights;
-   testWeights = mother->getWeights();
+   testWeights = mother.getWeights();
    cout << "Mother: " << endl;
-   unsigned int i, j, k;
-   cout.precision(17);
-   for(i = 0; i < testWeights.size(); i++)
-   {
-      for(j = 0; j < testWeights.at(i).size(); j++)
-      {
-         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
-         {
-            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
-         }
-         cout << endl;
-      }
-      cout << endl;
-   }
-   testWeights = father->getWeights();
+   mother.printWeights();
+   testWeights = father.getWeights();
    cout << "father: " << endl;
-   cout.precision(17);
-   for(i = 0; i < testWeights.size(); i++)
-   {
-      for(j = 0; j < testWeights.at(i).size(); j++)
-      {
-         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
-         {
-            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
-         }
-         cout << endl;
-      }
-      cout << endl;
-   }
-   //this->printWeights(mother);
-   //this->printWeights(father);
-   //printWeights(mother);
-   NeuralNet *child = mother->crossover(father, layerSizesTest);
-   
-   testWeights = child->getWeights();
+   father.printWeights();
+   NeuralNet child = father.crossover(mother, layerSizesTest);
    cout << "child: " << endl;
-   cout.precision(17);
-   for(i = 0; i < testWeights.size(); i++)
-   {
-      for(j = 0; j < testWeights.at(i).size(); j++)
-      {
-         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
-         {
-            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
-         }
-         cout << endl;
-      }
-      cout << endl;
-   }
+   child.printWeights();
+   vector<double> input;
+   //input.push_back(1);
+   input.push_back(1);
+   input.push_back(2);
+   input.push_back(3);
+   //input.push_back(-1);
+   cout << child.calculateNet(input) << endl;
+   
    return 0;
 }
 
-NeuralNet* NeuralNet::crossover(NeuralNet*& mother, vector<unsigned int> parentShape)
+double NeuralNet::calculateNet(vector<double> input)
 {
-   NeuralNet *father = this;
-   vector<vector<vector<double> > > motherWeights = mother->getWeights();
-   vector<vector<vector<double> > > fatherWeights = father->getWeights();
+   vector<vector<vector<double> > > currentWeights = this->getWeights();
+   double summation;
+   summation = 0;
+   vector<double> lastInputs, nextInputs;
+   unsigned int i, j, k;
+   lastInputs = input;   
+   // have to do minus one since we have a bias weight.
+   if(input.size() != currentWeights.at(0).at(0).size() - 1)
+   {
+      cerr << "CALCULATENET: INPUT NUMBER DOES NOT MATCH GIVEN NET" << endl;
+      exit(1);
+   }
+   for(i = 0; i < currentWeights.size() - 1; i++)
+   {
+      for(j = 0; j < currentWeights.at(i).size(); j++)
+      {
+         for (k = 1; k < currentWeights.at(i).at(j).size(); k++)
+         {
+            if(k - 1 >= 0)
+            {
+               cout << currentWeights.at(i).at(j).at(k) << " * " << lastInputs.at(k - 1) << " + " << endl;
+               summation += currentWeights.at(i).at(j).at(k) * lastInputs.at(k - 1);
+            }
+         }
+         cout << currentWeights.at(i).at(j).at(0) << endl;
+         // Add the bias.
+         summation += currentWeights.at(i).at(j).at(0);
+         // Use the sigmoid function.
+         if(i != currentWeights.size() - 2)
+         {
+            //cout << "not last layer" << endl;
+            summation = sigmoid(summation);
+            cout << "Output = " << summation << endl;
+         }
+         nextInputs.push_back(summation);
+         summation = 0;
+      }
+      lastInputs = nextInputs;
+      //cout << lastInputs.size() << endl;
+      nextInputs.clear();
+   }  
+   cout << "final output = " << lastInputs.at(0) << endl;
+   return lastInputs.at(0);
+}
+
+// Do cross over first and then go back through and mutate them
+NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShape)
+{
+   NeuralNet father = *this;
+   vector<vector<vector<double> > > motherWeights = mother.getWeights();
+   vector<vector<vector<double> > > fatherWeights = father.getWeights();
 
    unsigned int i, j, k;
    double gene;
+   gene = 0;
    int coin;
-   //motherWeights.size() is the size of layerSize when it created the net
-   NeuralNet *child = new NeuralNet(parentShape);
    // ya just. like. ya fathah.
-   child = father;
+   NeuralNet child = father;
    for(i = 0; i < motherWeights.size(); i++)
    {
       for(j = 0; j < motherWeights.at(i).size(); j++)
@@ -198,48 +208,148 @@ NeuralNet* NeuralNet::crossover(NeuralNet*& mother, vector<unsigned int> parentS
             coin = coinFlip();
             if(coin == 0)
             {
-               cout << "I got it from mom" << endl;
+               //cout << "I got " << i << j << k << " from mom" << endl;
+               //cout << motherWeights.at(i).at(j).at(k) << endl;
                gene = motherWeights.at(i).at(j).at(k);
+               child.weights.at(i).at(j).at(k) = gene;
             }
-            child->weights.at(i).at(j).at(k) = gene;
          }
       }
    }
+   for(i = 0; i < motherWeights.size(); i++)
+   {
+      for(j = 0; j < motherWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
+         {
+            gene = child.weights.at(i).at(j).at(k);
+            child.weights.at(i).at(j).at(k) = mutation(gene);
+         }
+      }
+   }
+   
    return child;
 }
-/*
-void NeuralNet::printWeights(NeuralNet*& network)
+
+void NeuralNet::printWeights()
 {
    vector<vector<vector<double> > > testWeights;
-   testWeights = network->getWeights();
+   testWeights = this->getWeights();
    cout.precision(17);
-   for(int i = 0; i < testWeights.size(); i++)
+   unsigned int i, j, k;
+   for(i = 0; i < testWeights.size(); i++)
    {
-      for(int j = 0; j < testWeights.at(i).size(); j++)
+      for(j = 0; j < testWeights.at(i).size(); j++)
       {
-         for (int k = 0; k < testWeights.at(i).at(j).size(); k++)
+         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
          {
-            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
+            cout << i << j << k << " : "  << fixed << testWeights.at(i).at(j).at(k) << " , ";
          }
          cout << endl;
       }
       cout << endl;
    }
-}*/
-
-double NeuralNet::calculateNet(NeuralNet*& network, vector<double> input)
-{
-   return 0;
 }
 
-// create a neuron that is a vector of doubles, push bakck one by one to create a layer. when the layer
-// is done, push that back onto the big vector
+double NeuralNet::mutation(double gene)
+{
+   if(randomInt(100) == 1)
+   {
+      cout << "I mutated" << endl;
+      gene = randomDouble();
+   }
+   return gene;
+}
 
-// need crossover and mutation
-// each weight flip a coin.
+double NeuralNet::sigmoid(double x)
+{
+   double eToTheX = exp(x);
+   return (eToTheX / (eToTheX + 1));
+}
 
-// code to evaluate the network
-// code to test
+vector<double> NeuralNet::boardToInput(Board reversiBoard, player mover)
+{
+   int size, i;
+   size = reversiBoard.getSize();
+   Tile locationTile;
+   vector<double> input;
+   input.clear();
+   for(i = 0; i < size * size; i++)
+   {
+      locationTile = reversiBoard.getTile(i);
+      if(locationTile.getOwner() == none)
+      {
+         input.push_back(0);
+      }
+      else if (locationTile.getOwner() == mover)
+      {
+         input.push_back(1);
+      }
+      else
+      {
+         input.push_back(-1);
+      }
+   }
+   return input;
+}
 
-// create net, print weights give inputs check by hand
+
+int reversiAgentOneMove(Board reversiBoard, player mover, NeuralNet network)
+{
+   vector<double> inputs;
+   Board copyBoard;
+   int size, i, bestMove;
+   double maxHeuristic, heuristic;
+   maxHeuristic = -1000;
+   bestMove = -1;
+   heuristic = 0;
+   size = reversiBoard.getSize();
+   for(i = 0; i < size * size; i++)
+   {
+      copyBoard = reversiBoard;
+      copyBoard.makeMove(i, mover);
+      inputs = network.boardToInput(copyBoard, mover);
+      heuristic = network.calculateNet(inputs);
+      if(heuristic > maxHeuristic)
+      {
+         maxHeuristic = heuristic;
+         bestMove = i;
+      }
+   }
+   if(bestMove != -1)
+   {
+      return bestMove;
+   }
+   return bestMove; // return something else maybe?
+}
+
 // crossover or mutation functtion probably normally distributed
+
+
+   // test reversi code. invalid
+   // test crossover and mutate.
+   // finsih and test calculateNet
+// Writing as many mains for testng is fine
+// read some more
+// Have a function member function that takes a board as input and seed inputs. evaluate that board by calling calcNet - 1 0 and 1
+// evaluate each available position, and use that to decide which move to make
+// agent function that looks one move ahead and returns a move;
+// thinking about the evolution code.
+      // keeping track of populations of agents
+      // how big pop
+      // agents play against eachother to determine fitness
+      // maybe score contributes
+      // scoreboards locally
+      // do they play against everyone or play against neighbors
+      // making a taurus - top wraps and sides wraps
+      // 6 direction neighbors perhaps
+      // each play as black and as white
+      
+      // think about genetic algorithm stuff.
+      
+      // The old organism at this location, choses the neighbor with the "highest" fitness
+      // More likely to choose the best one but still some likelihood towards the others.
+      
+       
+// Get started on genetic algorithm
+// Finish and test board to input and agent one move
