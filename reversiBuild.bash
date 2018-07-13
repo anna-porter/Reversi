@@ -131,10 +131,21 @@ else
    exit 5
 fi
 
+echo " * neuralNet.cpp: Compiling . . ."
+if ${CXX} ${CXXFLAGS} -c "neuralNet.cpp"
+then
+   echo " * neuralNetMain.cpp: Compilation succeeded."
+else
+   echo " * neuralNetMain.cpp: Compilation failed."
+   echo " * Build failed."
+   rm *.o
+   exit 6
+fi
+
 echo " * Linking . . ."
 execFile="${challenge}RunSim"
 rm -f "${execFile}"
-if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}Funcs.o" "${challenge}.o" ${objectFiles}
+if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}Funcs.o" "${challenge}.o" "neuralNet.o" ${objectFiles}
 then
    echo " * Linking succeeded."
    echo " * Executable file ./${execFile} is ready to run!"
