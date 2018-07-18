@@ -1,8 +1,3 @@
-#include<vector>
-#include<iostream>
-#include<climits>
-#include<cstdlib> 
-#include<cmath> 
 #include "reversi.h"
 #include "neuralNet.h" 
 
@@ -11,10 +6,10 @@ using namespace std;
 int coinFlip();
 double randomDouble();
 int randomInt(int n);
-int reversiAgentOneMove(Board reversiBoard, player mover, NeuralNet network);
+//int reversiAgentOneMove(Board, player, NeuralNet&);
 // weight storage
 // blondie24 page 41
-
+// add activation function
 NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
 {
    this->weights.clear();
@@ -23,11 +18,11 @@ NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
 }
 
 
-/*
+
 NeuralNet::NeuralNet()
 {
-   // hahaha idk man
-}*/
+   this->weights.clear();
+}
 
 // constructors
 
@@ -44,6 +39,7 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
    vector<double> tempNeuron;
    vector<vector<double> > tempLayer;
    double randomNum;
+   //cout << "layerSIzes: " << layerSizes.size() << endl;
    // loops the same number of times as the number of layers we have. 
    for(i = 0; i < layerSizes.size(); i++)
    {
@@ -60,6 +56,8 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
                tempNeuron.push_back(randomNum);
             }
             tempLayer.push_back(tempNeuron);
+            //cout << i << " : " << tempLayer.size() << endl;
+            //cout << i << " : " << tempLayer.size() << endl;
             tempNeuron.clear();
          }
       }
@@ -103,6 +101,7 @@ int randomInt(int n)
    return r / (INT_MAX / n);
 }
 
+/*
 int main()
 {
    srandom(time(0)); // seed the random number generator.
@@ -134,10 +133,10 @@ int main()
    input.push_back(2);
    input.push_back(3);
    //input.push_back(-1);
-   cout << child.calculateNet(input) << endl;
+   //cout << child.calculateNet(input) << endl;
    
    return 0;
-}
+}*/
 
 double NeuralNet::calculateNet(vector<double> input)
 {
@@ -147,7 +146,7 @@ double NeuralNet::calculateNet(vector<double> input)
    vector<double> lastInputs, nextInputs;
    unsigned int i, j, k;
    lastInputs = input;   
-   // have to do minus one since we have a bias weight.
+   // have to do minus one since we have a bias weight.;
    if(input.size() != currentWeights.at(0).at(0).size() - 1)
    {
       cerr << "CALCULATENET: INPUT NUMBER DOES NOT MATCH GIVEN NET" << endl;
@@ -161,11 +160,11 @@ double NeuralNet::calculateNet(vector<double> input)
          {
             if(k - 1 >= 0)
             {
-               cout << currentWeights.at(i).at(j).at(k) << " * " << lastInputs.at(k - 1) << " + " << endl;
+               //cout << currentWeights.at(i).at(j).at(k) << " * " << lastInputs.at(k - 1) << " + " << endl;
                summation += currentWeights.at(i).at(j).at(k) * lastInputs.at(k - 1);
             }
          }
-         cout << currentWeights.at(i).at(j).at(0) << endl;
+         //cout << currentWeights.at(i).at(j).at(0) << endl;
          // Add the bias.
          summation += currentWeights.at(i).at(j).at(0);
          // Use the sigmoid function.
@@ -173,7 +172,7 @@ double NeuralNet::calculateNet(vector<double> input)
          {
             //cout << "not last layer" << endl;
             summation = sigmoid(summation);
-            cout << "Output = " << summation << endl;
+            //cout << "Output = " << summation << endl;
          }
          nextInputs.push_back(summation);
          summation = 0;
@@ -182,7 +181,7 @@ double NeuralNet::calculateNet(vector<double> input)
       //cout << lastInputs.size() << endl;
       nextInputs.clear();
    }  
-   cout << "final output = " << lastInputs.at(0) << endl;
+   //cout << "final output = " << lastInputs.at(0) << endl;
    return lastInputs.at(0);
 }
 
@@ -266,90 +265,3 @@ double NeuralNet::sigmoid(double x)
    double eToTheX = exp(x);
    return (eToTheX / (eToTheX + 1));
 }
-
-vector<double> NeuralNet::boardToInput(Board reversiBoard, player mover)
-{
-   int size, i;
-   size = reversiBoard.getSize();
-   Tile locationTile;
-   vector<double> input;
-   input.clear();
-   for(i = 0; i < size * size; i++)
-   {
-      locationTile = reversiBoard.getTile(i);
-      if(locationTile.getOwner() == none)
-      {
-         input.push_back(0);
-      }
-      else if (locationTile.getOwner() == mover)
-      {
-         input.push_back(1);
-      }
-      else
-      {
-         input.push_back(-1);
-      }
-   }
-   return input;
-}
-
-
-int reversiAgentOneMove(Board reversiBoard, player mover, NeuralNet network)
-{
-   vector<double> inputs;
-   Board copyBoard;
-   int size, i, bestMove;
-   double maxHeuristic, heuristic;
-   maxHeuristic = -1000;
-   bestMove = -1;
-   heuristic = 0;
-   size = reversiBoard.getSize();
-   for(i = 0; i < size * size; i++)
-   {
-      copyBoard = reversiBoard;
-      copyBoard.makeMove(i, mover);
-      inputs = network.boardToInput(copyBoard, mover);
-      heuristic = network.calculateNet(inputs);
-      if(heuristic > maxHeuristic)
-      {
-         maxHeuristic = heuristic;
-         bestMove = i;
-      }
-   }
-   if(bestMove != -1)
-   {
-      return bestMove;
-   }
-   return bestMove; // return something else maybe?
-}
-
-// crossover or mutation functtion probably normally distributed
-
-
-   // test reversi code. invalid
-   // test crossover and mutate.
-   // finsih and test calculateNet
-// Writing as many mains for testng is fine
-// read some more
-// Have a function member function that takes a board as input and seed inputs. evaluate that board by calling calcNet - 1 0 and 1
-// evaluate each available position, and use that to decide which move to make
-// agent function that looks one move ahead and returns a move;
-// thinking about the evolution code.
-      // keeping track of populations of agents
-      // how big pop
-      // agents play against eachother to determine fitness
-      // maybe score contributes
-      // scoreboards locally
-      // do they play against everyone or play against neighbors
-      // making a taurus - top wraps and sides wraps
-      // 6 direction neighbors perhaps
-      // each play as black and as white
-      
-      // think about genetic algorithm stuff.
-      
-      // The old organism at this location, choses the neighbor with the "highest" fitness
-      // More likely to choose the best one but still some likelihood towards the others.
-      
-       
-// Get started on genetic algorithm
-// Finish and test board to input and agent one move
