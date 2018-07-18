@@ -5,7 +5,11 @@
 
 #include <iomanip>
 #include <iostream>
+#include <cmath>
 #include <vector>
+#include <climits>
+#include <cstdlib>
+#include <stdlib.h> 
 
 using namespace std;
 
@@ -59,10 +63,10 @@ public:
    vector<int> checkLowerRight(int, player);
    vector<int> checkLowerLeft(int, player);
    //vector<int> checkDirection(int, player, int, int);
-
+   vector<double> boardToInput(player mover);
    vector<Tile> getBoard() const{return BoardLayout;}
 
    Board& operator=(const Board &rhs);
 };
-
+int randomInt(int n);
 #endif // #ifndef HEX_H
