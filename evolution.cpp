@@ -59,12 +59,12 @@ void Population::playNeighbors()
                   fitnessUpdate = playGame(pop.at(i).at(j), pop.at(row).at(column));
                   pop.at(i).at(j).updateFitness(fitnessUpdate.first);
                   pop.at(row).at(column).updateFitness(fitnessUpdate.second);
-                  cout << "organism " << i << " , " << j << " vs. organism " << row << " , " << column << endl; 
-                  cout << fitnessUpdate.first << " , " << fitnessUpdate.second << endl;
+                  //cout << "organism " << i << " , " << j << " vs. organism " << row << " , " << column << endl; 
+                  //cout << fitnessUpdate.first << " , " << fitnessUpdate.second << endl;
                }
             }
          }
-         cout << endl << endl;
+         //cout << endl << endl;
       }
    }
 }
@@ -109,8 +109,8 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
             pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
             // White is first in this pair.
-            cout << "White: " << finalScore.first << endl;
-            cout << "Black: " << finalScore.second << endl;
+            //cout << "White: " << finalScore.first << endl;
+            //cout << "Black: " << finalScore.second << endl;
             // WINNER TAKES EMPTY SPACES
             // if black wins
             if(finalScore.first > finalScore.second)
@@ -166,8 +166,8 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          {
             pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
-            cout << "Black: " << finalScore.first << endl;
-            cout << "White: " << finalScore.second << endl;
+            //cout << "Black: " << finalScore.first << endl;
+            //cout << "White: " << finalScore.second << endl;
             // WINNER TAKES EMPTY SPACES
             // if black wins
             if(finalScore.first > finalScore.second)
@@ -284,7 +284,6 @@ Population Population::createNextGen()
    total = 0;
    vector<int> parentRow;
    vector<int> parentColumn;
-   //pair<int, int> fitnessUpdate;
    for(i = 0; i < size; i++)
    {
       for(j = 0; j < size; j++)
@@ -351,7 +350,7 @@ Population Population::createNextGen()
             if(randomNum <= condition && !parentFound)
             {
                parentFound = true;
-               cout << "Organism " <<i << j<< "picked parent " << parentRow.at(k) << parentColumn.at(k) << endl;
+               //cout << "Organism " <<i << j<< "picked parent " << parentRow.at(k) << parentColumn.at(k) << endl;
                parentOrg = parentCandidates.at(k);
             }
          }
@@ -394,19 +393,23 @@ void Population::ouputPopulation()
 {
    
 }*/
-/*
+
 Population Population::runGenerations(int generations, vector<unsigned int> layerSizes, int size)
 {
    int i;
-   Population currentGen(layerSizes, size);
+   Population currentGen = *this;
+   //Population currentGen(layerSizes, size);
    // this initialization is just a place holdler;
    Population nextGen(layerSizes, size);
    for(i = 0; i < generations; i++)
    {
+      cout << "Generation " << i << endl;
       currentGen.playNeighbors();
-      currentGen.createNextGen();
+      nextGen = currentGen.createNextGen();
+      currentGen = nextGen;
    }
-}*/
+   return currentGen;
+}
 Population& Population::operator=(const Population &rhs)
 {
    this->pop.clear();
@@ -431,6 +434,8 @@ void Population::printPopulation()
 }
 int main()
 {
+   vector<unsigned int> layerSizes;
+   srandom(time(0));
    /*
    // Testing for crossover on a population with small neuralnets
    vector<unsigned int> layerSizes;
@@ -465,6 +470,29 @@ int main()
       }
       cout << endl;
    }*/
-
+   //populus.playNeighbors();
+   //Population newGen = populus.createNextGen();
+   //newGen.printPopulation();
+   layerSizes.push_back(64);
+   layerSizes.push_back(32);
+   layerSizes.push_back(1);
+   Population populus = Population(layerSizes, 10);
+   Organism black1gen = populus.getOrganism(4, 4);
+   Population pop10thGen = populus.runGenerations(10, layerSizes, 10);
+   Organism white10gen = pop10thGen.getOrganism(4,4);
+   pair<int, int> scores,scores2;
+   scores = populus.playGame(black1gen, white10gen);
+   scores2 = pop10thGen.playGame(black1gen, white10gen);
+   cout << "Black 1st gen: " << scores.first << endl;
+   cout << "White 10th gen: " << scores.second << endl; 
+   cout << "B: " << scores2.first << endl;
+   cout << "W: " << scores2.second << endl;
+   
+   Population pop20thGen = pop10thGen.runGenerations(10, layerSizes, 10);
+   Organism white20Gen = pop20thGen.getOrganism(4,4);
+   scores = populus.playGame(black1gen, white20gen);
+   cout << "Black 1st gen: " << scores.first << endl;
+   cout << "white 20th gen: " << scores.first << endl;
+   
    return 0;
 }
