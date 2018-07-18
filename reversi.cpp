@@ -1,6 +1,4 @@
 #include "reversi.h"
-#include <vector>
-
 Tile::Tile(int location, int size)
 {
    owner = none; 
@@ -205,6 +203,7 @@ bool Board::isValidMove(int location, player mover) {
    }
    if(!neighborFound)
    {  
+      //cout << "no neighbors" << endl;
       return false;
    }
    
@@ -249,6 +248,7 @@ vector<int> Board::getValidMoves(player mover)
    {
       if(isValidMove(i, mover))
       {
+         //cout << i << " is valid " << endl;
          validPositions.push_back(i);
       }
    }
@@ -281,16 +281,20 @@ bool Board::isGameOver()
       return true;
    }
    //cout << "going into finding valid moves" << endl;
-   for(i = 0; i < size * size; i++)
+   /*for(i = 0; i < size * size; i++)
    {
-      if(isValidMove(i, White) || isValidMove(i, Black))
+      if(getValid || isValidMove(i, Black))
       {
          //cout << "Valid move found" << endl;
          return false;
       }
+   }*/
+   if(getValidMoves(Black).size() == 0 && getValidMoves(White).size() == 0)
+   {
+      return true;
    }
    //cout << "reached end of gameover" << endl;
-   return true;
+   return false;
 }
 
 vector<int> Board::checkRight(int location, player mover)
@@ -622,15 +626,16 @@ vector<int> Board::checkLowerRight(int location, player mover)
    return flipTiles;
 }
 
-vector<int> Board::checkLowerLeft(int location, player mover) 
+vector<int> Board::checkLowerLeft(int location, player mover)
 {
    int size = this->getSize();
-   Tile *locationTile = &(BoardLayout[location]);
+   /// CHANGED LOCATION TILE
+   Tile locationTile = (BoardLayout[location]);
    Tile *nextTile;
    Tile *pivotTile = NULL;   // This stores the tile which is a potential ""flip end"
    int row, column, pivotColumn, pivotRow, nextTileNum;
-   row = locationTile->getRow();
-   column = locationTile->getColumn();
+   row = locationTile.getRow();
+   column = locationTile.getColumn();
    vector<int> flipTiles;
    int i, j;
    for(i = row + 1, j = column - 1; i < size && j >= 0; i++, j--)
@@ -671,7 +676,6 @@ vector<int> Board::checkLowerLeft(int location, player mover)
    return flipTiles;
 }
 
-
 void Board::printBoard()
 {
    //int column, row, width;
@@ -682,12 +686,12 @@ void Board::printBoard()
    //cout << " 0  1  2  3  4  5  6  7" << endl;
    //int rowCount = 1;
    //cout << " 0 ";
-   cout << endl;
+   cout << endl << " ____________________________" << endl << endl << " | ";
    for(i = 0; i < size*size; i++)
    {
       if(i % size == 0 && i > 0)
       {
-         cout << endl; //<< " " << rowCount << " ";
+         cout << " | " << endl << " | "; //<< " " << rowCount << " ";
          //rowCount++;
       }
       locationTile = &(BoardLayout[i]);
@@ -704,8 +708,7 @@ void Board::printBoard()
          cout << "   ";
       }
    }
-   cout << endl;
-   cout << endl;
+   cout << " | " << endl << " ____________________________" << endl;
 }
 
 int Board::getTileLocation(int row, int column) const
@@ -716,6 +719,32 @@ int Board::getTileLocation(int row, int column) const
       return -1;
 
    return size * row + column;
+}
+
+vector<double> Board::boardToInput(player mover)
+{
+   int size, i;
+   size = this->getSize();
+   Tile locationTile;
+   vector<double> input;
+   input.clear();
+   for(i = 0; i < size * size; i++)
+   {
+      locationTile = this->getTile(i);
+      if(locationTile.getOwner() == none)
+      {
+         input.push_back(0);
+      }
+      else if (locationTile.getOwner() == mover)
+      {
+         input.push_back(1);
+      }
+      else
+      {
+         input.push_back(-1);
+      }
+   }
+   return input;
 }
 
 pair<int, int> Board::getScore()
@@ -729,11 +758,11 @@ pair<int, int> Board::getScore()
    for(i = 0; i < size*size; i++)
    {
      locationTile = &(BoardLayout[i]);
-     if(locationTile->getOwner() == White)
+     if(locationTile->getOwner() == Black)
      {
         scores.first++;
      }
-     else if(locationTile->getOwner() == Black)
+     else if(locationTile->getOwner() == White)
      {
         scores.second++;
      }
@@ -741,7 +770,7 @@ pair<int, int> Board::getScore()
    return scores;
 }
 /*
-///Manual moves main;
+//Manual moves main;
 int main()
 {
    int row, column, tileNum, size;
@@ -755,35 +784,15 @@ int main()
    //cout << "Checking to see if game is over" << endl;
    while(!reversiBoard.isGameOver())
    {
-      cout << "Enter row, column for player White" << endl;
-      cin >> row >> column;
-      tileNum = size * row + column;
-      if(!reversiBoard.isValidMove(tileNum, White))
-      {
-         reversiBoard.printBoard();
-         cout << "invalid move, black wins" << endl;
-      }
-      else
-      {
-         reversiBoard.makeMove(tileNum, White);
-         reversiBoard.printBoard();
-      }
-      if(reversiBoard.isGameOver())
-      {
-         pair<int, int> finalScore;
-         finalScore = reversiBoard.getScore();
-         cout << "White = " << finalScore.first << endl;
-         cout << "Black = " << finalScore.second << endl;
-      }
       cout << "Enter row, column for player Black" << endl;
       cin >> row >> column;
-      tileNum  = size*row + column;
+      tileNum = size * row + column;
       if(!reversiBoard.isValidMove(tileNum, Black))
       {
          reversiBoard.printBoard();
-         cout << "invalid move, white wins" << endl;
+         cout << "invalid move, White wins" << endl;
       }
-      else 
+      else
       {
          reversiBoard.makeMove(tileNum, Black);
          reversiBoard.printBoard();
@@ -792,8 +801,28 @@ int main()
       {
          pair<int, int> finalScore;
          finalScore = reversiBoard.getScore();
-         cout << "White = " << finalScore.first << endl;
-         cout << "Black = " << finalScore.second << endl;
+         cout << "White = " << finalScore.second << endl;
+         cout << "Black = " << finalScore.first << endl;
+      }
+      cout << "Enter row, column for player White" << endl;
+      cin >> row >> column;
+      tileNum  = size*row + column;
+      if(!reversiBoard.isValidMove(tileNum, White))
+      {
+         reversiBoard.printBoard();
+         cout << "invalid move, black wins" << endl;
+      }
+      else 
+      {
+         reversiBoard.makeMove(tileNum, White);
+         reversiBoard.printBoard();
+      }
+      if(reversiBoard.isGameOver())
+      {
+         pair<int, int> finalScore;
+         finalScore = reversiBoard.getScore();
+         cout << "White = " << finalScore.second << endl;
+         cout << "Black = " << finalScore.first << endl;
       }
    }
    return 0;
