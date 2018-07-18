@@ -54,10 +54,35 @@ else
    exit 6
 fi
 
+#include for the neuralAgentTestMain
+
+#echo " * neuralNet.cpp: Compiling . . ."
+#if ${CXX} ${CXXFLAGS} -c "neuralAgentTestMain.cpp"
+#then
+#   echo " * neuralAgentTestMain.cpp: Compilation succeeded."
+#else
+#   echo " * neuralAgentTestMain.cpp: Compilation failed."
+#   echo " * Build failed."
+#   rm *.o
+#   exit 7
+#fi
+
+
+echo " * evolution.cpp: Compiling . . ."
+if ${CXX} ${CXXFLAGS} -c "evolution.cpp"
+then
+   echo " * evolution.cpp: Compilation succeeded."
+else
+   echo " * evolution.cpp: Compilation failed."
+   echo " * Build failed."
+   rm *.o
+   exit 8
+fi
+
 echo " * Linking . . ."
 execFile="${challenge}RunSim"
 rm -f "${execFile}"
-if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}.o" "neuralNet.o" ${objectFiles}
+if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}.o" "neuralNet.o" "evolution.o"  ${objectFiles}
 then
    echo " * Linking succeeded."
    echo " * Executable file ./${execFile} is ready to run!"
@@ -65,7 +90,7 @@ else
    echo " * Linking failed."
    echo " * Build failed."
    rm *.o
-   exit 6
+   exit 9
 fi
 
 rm *.o
