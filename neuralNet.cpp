@@ -1,6 +1,6 @@
 #include "reversi.h"
 #include "neuralNet.h" 
-
+#include "evolution.h"
 using namespace std;
 //f(x) = x / (1 + abs(x))
 int coinFlip();
@@ -127,11 +127,11 @@ int main()
    NeuralNet child = father.crossover(mother, layerSizesTest);
    cout << "child: " << endl;
    child.printWeights();
-   vector<double> input;
+   //vector<double> input;
    //input.push_back(1);
-   input.push_back(1);
-   input.push_back(2);
-   input.push_back(3);
+   //input.push_back(1);
+   //input.push_back(2);
+   //input.push_back(3);
    //input.push_back(-1);
    //cout << child.calculateNet(input) << endl;
    
@@ -222,7 +222,7 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
             gene = child.weights.at(i).at(j).at(k);
-            child.weights.at(i).at(j).at(k) = mutation(gene);
+            //child.weights.at(i).at(j).at(k) = mutation(gene);
          }
       }
    }
@@ -248,13 +248,35 @@ void NeuralNet::printWeights()
       }
       cout << endl;
    }
+} 
+void NeuralNet::saveWeights(ofstream &fout)
+{
+   vector<vector<vector<double> > > givenWeights;
+   givenWeights = this->getWeights();
+   cout.precision(17);
+   unsigned int i, j, k;
+   for(i = 0; i < givenWeights.size(); i++)
+   {
+      fout << "newLayer" << endl;
+      for(j = 0; j < givenWeights.at(i).size(); j++)
+      {
+         fout << "newNeuron" << endl;
+         for (k = 0; k < givenWeights.at(i).at(j).size(); k++)
+         {
+            
+            fout << fixed << setprecision(17) << givenWeights.at(i).at(j).at(k) << ",";
+         }
+         fout << endl;
+      }
+   }
+   fout << "endOfOrganism" << endl;
 }
 
 double NeuralNet::mutation(double gene)
 {
    if(randomInt(100) == 1)
    {
-      cout << "I mutated" << endl;
+      //cout << "I mutated" << endl;
       gene = randomDouble();
    }
    return gene;
