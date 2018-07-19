@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <climits>
+#include <fstream>
 #include <cstdlib>
 #include <cmath>
 #include <stdlib.h> 
@@ -18,23 +19,19 @@ class NeuralNet
    // what the final destination neuron is
    // what origin neuron it came from.
       vector<vector<vector<double> > > weights;
-      //double fitness;
    public:
       NeuralNet(vector<unsigned int>);
       NeuralNet();
+      NeuralNet(vector<vector<vector<double> > > newWeights) {weights = newWeights;}
       vector<vector<vector<double> > > getWeights() const {return weights;}
       NeuralNet crossover(NeuralNet, vector<unsigned int>);
       void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
       void printWeights();
+      void saveWeights(ofstream&);
       double calculateNet(vector<double>);
       NeuralNet& operator=(const NeuralNet &rhs);
       double mutation(double);
       double sigmoid(double);
-      //vector<double> boardToInput(Board, player);
-      // takes in another member of this class
-      // returns a brand new neural net that is the offspring of the two parents
-      // *this and the new one as a parameter by ref and const
-      // Also need a calculate function
 };
 
 #endif
