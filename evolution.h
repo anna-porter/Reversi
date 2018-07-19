@@ -7,7 +7,9 @@
 #include <climits>
 #include <cmath>
 #include <cstdlib>
-#include <stdlib.h> 
+#include <stdlib.h>
+#include <string>
+#include <fstream>
 #include "neuralNet.h"
 
 using namespace std;
@@ -20,6 +22,8 @@ class Organism
       vector<unsigned int> layerSizes;
    public: 
       Organism(vector<unsigned int>);
+      Organism();
+      Organism(vector<vector<vector<double> > >);
       double getFitness() const {return fitness;}
       void updateFitness(int nextFitness) {fitness += nextFitness;}
       vector<unsigned int> getLayerSizes() const{return layerSizes;}
@@ -34,17 +38,24 @@ class Population
       unsigned int numOfGenerations;
    public:
       Population(vector<unsigned int>, int);
-      void playNeighbors();
+      Population();
+      Population(vector<vector<Organism> >);
       int getSize() {return popSize;}
-      vector<vector<Organism> > getPop() const{return pop;};
+      void setSize(int newSize) {popSize = newSize;} 
+      vector<vector<Organism> > getPop() const{return pop;}
+      Organism getOrganism(int row, int col) const {return pop.at(row).at(col);}
+      void setPop(vector<vector<Organism> > newPop) {pop = newPop;}
       vector<vector<int> > getAllFitnesses();
+      void playNeighbors();
       pair<int, int> playGame(Organism, Organism);
+      pair<int, int> playGamePrint(Organism, Organism);
       Population createNextGen();
       Population runGenerations(int, vector<unsigned int>, int);
-      void outputPopulation();
       void assignFittnesses();
-      void recreatePopulation();
+      Population loadPopulation();
+      void savePopulation(int);
       void printPopulation();
+      //void popVSpop(Population, Population);
       Population& operator=(const Population &rhs);
 };
 #endif
