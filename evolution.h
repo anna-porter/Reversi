@@ -26,6 +26,7 @@ class Organism
       Organism(vector<vector<vector<double> > >);
       double getFitness() const {return fitness;}
       void updateFitness(int nextFitness) {fitness += nextFitness;}
+      void setFitness(int newFitness) {fitness = newFitness;}
       vector<unsigned int> getLayerSizes() const{return layerSizes;}
       NeuralNet getNet() const {return brain;}
       void setNet(NeuralNet network) {brain = network;}
@@ -34,14 +35,12 @@ class Population
 {
    private: 
       vector<vector<Organism> > pop;
-      int popSize;
+      //int popSize;
       unsigned int numOfGenerations;
    public:
       Population(vector<unsigned int>, int);
       Population();
       Population(vector<vector<Organism> >);
-      int getSize() {return popSize;}
-      void setSize(int newSize) {popSize = newSize;} 
       vector<vector<Organism> > getPop() const{return pop;}
       Organism getOrganism(int row, int col) const {return pop.at(row).at(col);}
       void setPop(vector<vector<Organism> > newPop) {pop = newPop;}
@@ -51,11 +50,13 @@ class Population
       pair<int, int> playGamePrint(Organism, Organism);
       Population createNextGen();
       Population runGenerations(int, vector<unsigned int>, int);
-      void assignFittnesses();
+      void printFitnesses();
+      void assignFitnesses();
+      void resetFitnesses();
       Population loadPopulation();
       void savePopulation(int);
       void printPopulation();
-      //void popVSpop(Population, Population);
+      void popVSpop(Population);
       Population& operator=(const Population &rhs);
 };
 #endif
