@@ -1,25 +1,11 @@
 #include "reversi.h"
 #include "neuralNet.h"
 #include "evolution.h"
-// test mutation well.
-// minimax
-// depth of minimax, size and shape of the network
-// style of converting board to inputs
-// size of population
-// how to compare organisms. just number of wins or do tiles factor
-// might consider avg length of the game
-// what shape the random weights r generated with
-// which parent to consider.
-// what kind of mutation.
-// play every guy against every guy
-// do one neuron and test save/load
+#include <sstream>
 int reversiAgentOneMove(Board, player, Organism);
-
 Organism::Organism(vector<unsigned int> layerSizes)
 {
-   //cout << "layersizes size inside organism " << layerSizes.size() << endl;
    brain = NeuralNet(layerSizes);
-   //cout << "made Net " << endl;
    fitness = 0;
    this->layerSizes = layerSizes;
 }
@@ -40,14 +26,11 @@ Population::Population(vector<vector<Organism> > newPop)
    pop = newPop;
 }
 
-Population::Population(vector<unsigned int> layerSizes, int populationSize)
+Population::Population(vector<unsigned int> layerSizes, int popSize)
 {
-   //cout << "layersizes size inside population" << layerSizes.size() << endl;
    Organism currentGuy = Organism(layerSizes);
-   // Change to two for loops
    int i, j;
    vector<Organism> row;
-   popSize = populationSize;
    for(i = 0; i < popSize; i++)
    {
       for(j = 0; j < popSize; j++)
@@ -69,7 +52,8 @@ void Population::playNeighbors()
 {
    int i, j, rowInc, colInc, row, column;
    int size;
-   size = this->getSize();
+   size = this->pop.size();
+   cout << "this.size() = " << this->pop.size() << endl;
    //cout << size << endl;
    pair<int, int> fitnessUpdate;
    for(i = 0; i < size; i++)
@@ -102,7 +86,7 @@ void Population::playNeighbors()
 pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
 {
    srandom(time(0));
-   // white and then black for this pair
+   // black and then white for this pair
    pair<int, int> fitnesses;
    int emptyPieces;
    fitnesses.first = 0;
@@ -380,7 +364,7 @@ vector<vector<int> > Population::getAllFitnesses()
 {
    vector<int> row;
    vector<vector<int> > fitnessVec;
-   int size = this->getSize();
+   int size = this->pop.size();
    int i,j;
    for(i = 0; i < size; i++)
    {
@@ -442,7 +426,7 @@ Population Population::createNextGen()
    srandom(time(0));
    lowestFit = 999999;
    NeuralNet mother, father, child;
-   size = this->getSize();
+   size = this->pop.size();
    Population oldGen = *this;
    vector<unsigned int> layers = oldGen.pop.at(0).at(0).getLayerSizes();
    Population nextGen(layers, size);
@@ -540,11 +524,11 @@ Population Population::createNextGen()
    return nextGen;
 }
 
-void Population::assignFittnesses()
+void Population::assignFitnesses()
 {
    int i, j;
    int size, newFitness;
-   size = this->getSize();
+   size = this->pop.size();
    srandom(time(0));
    for(i = 0; i < size; i++)
    {
@@ -560,8 +544,6 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
 {
    int i;
    Population currentGen = *this;
-   //Population currentGen(layerSizes, size);
-   // this initialization is just a place holdler;
    Population nextGen(layerSizes, size);
    for(i = 0; i < generations; i++)
    {
@@ -590,7 +572,7 @@ void Population::printPopulation()
    cout << "inside Print population" << endl;
    Population populus = *this;
    int size, i, j;
-   size = populus.getSize();
+   size = populus.pop.size();
    NeuralNet network;
    cout << "size " << size << endl;
    for(i = 0; i < size; i++)
@@ -604,44 +586,59 @@ void Population::printPopulation()
    }
 }
 
+void Population::resetFitnesses()
+{
+   Population populus = *this;
+   int i, j;
+   int size = populus.pop.size();
+   for(i = 0; i < size; i++)
+   {
+      for(j = 0; j < size; j++)
+      {
+         populus.pop.at(i).at(j).setFitness(0);
+      }
+   }
+}
+string fileString(int genNum)
+{
+   stringstream strstr;
+   strstr << "Gen_" << genNum << ".txt";
+   return strstr.str();
+}
 void Population::savePopulation(int genNum)
 {
    //https://stackoverflow.com/questions/13108973/creating-file-names-automatically-c
    Population populus = *this;
-   int num;
-   int digit;
-   string genNumString = "";
-   for(num = genNum; num > 0; num = num / 10)
+   //int num;
+   //int digit;
+   ofstream fout;
+   //string fileName = "" + fileString(genNum);
+   /*string fileName = "Gen_ ";
+   while(genNum > 0)
    {
       digit = genNum % 10;
-      //cout << digit << endl;
-      switch(digit) 
+      genNum =  genNum / 10;
+      switch (digit)
       {
-         case 1: genNumString += "1"; break;
-         case 2: genNumString += "2"; break;
-         case 3: genNumString += "3"; break;
-         case 4: genNumString += "4"; break;
-         case 5: genNumString += "5"; break;
-         case 6: genNumString += "6"; break;
-         case 7: genNumString += "7"; break;
-         case 8: genNumString += "8"; break;
-         case 9: genNumString += "9"; break;
-         case 0: genNumString += "0"; break;
+         case 1: fileName += "1"; break;
+         case 2: fileName += "2"; break;
+         case 3: fileName += "3"; break;
+         case 4: fileName += "4"; break;
+         case 5: fileName += "5"; break;
+         case 6: fileName += "6"; break;
+         case 7: fileName += "7"; break;
+         case 8: fileName += "8"; break;
+         case 9: fileName += "9"; break;
+         case 0: fileName += "0"; break;
+         
       }
    }
-   
-   string name = "Gen_" + genNumString + ".txt";
-   
-   ofstream fout; 
-   fout.open(name.c_str());
+   fileName += ".txt";*/
+   fout.open("testing.txt");
    int i, j, size;
-   size = populus.getSize();
+   size = populus.pop.size();
    NeuralNet network;
-  
-   //vector<unsigned int> layerSizes;
-   //layerSizes =  populus.getOrganism(0,0).getLayerSizes();
-   //for(i = 0; i < layerSizes;
-   
+   fout << "size " << endl << size << endl;
    for(i = 0; i < size; i++)
    {
       for(j = 0;  j < size; j++)
@@ -659,7 +656,8 @@ Population Population::loadPopulation()
    ifstream input;
    input.open("Gen_1.txt");
    string token, weightString, numString;
-   int lastDig;
+   int lastDig, size;
+   size = 0; // to keep compuler from warning me
    double weight;
    Population newPop;
    Organism placeholder;
@@ -670,6 +668,12 @@ Population Population::loadPopulation()
    vector<double> tempNeuron;
    if(input.is_open())
    {
+      getline(input, token);
+      if(token == "size")
+      {
+         getline(input, token);
+         size = atof(token.c_str());
+      }
       while(getline(input, token))
       {
          if(token == "newNeuron")
@@ -709,8 +713,6 @@ Population Population::loadPopulation()
          }
       }
    }
-   int size = tempOrganisms.size();
-   size = sqrt(size);
    vector<Organism> tempRow;
    for(int i = 0; i < size; i++)
    {
@@ -723,13 +725,243 @@ Population Population::loadPopulation()
    }  
    input.close();
    Population generatedPop = Population(organismVecs);
-   cout << "size inside of load: " << size << endl;
-   generatedPop.setSize(size);
-   int testsize = generatedPop.getSize();
-   cout << "test size: " << testsize << endl;
    return generatedPop;
 }
 
+void Population::popVSpop(Population teamB)
+{
+   Population teamA = *this;
+   int sizeOfA, sizeOfB, rowA, colA, rowB, colB, i, j, temp;
+   sizeOfA = teamA.pop.size();
+   sizeOfB = teamB.pop.size();
+   int winsAsWhiteA[sizeOfA * sizeOfA], winsAsWhiteB[sizeOfB * sizeOfB];
+   int winsAsBlackA[sizeOfA * sizeOfA], winsAsBlackB[sizeOfB * sizeOfB];
+   int lossesAsWhiteA[sizeOfA * sizeOfA], lossesAsWhiteB[sizeOfB * sizeOfB];
+   int lossesAsBlackA[sizeOfA * sizeOfA], lossesAsBlackB[sizeOfB * sizeOfB];
+   int tiesAsWhiteA[sizeOfA * sizeOfA], tiesAsWhiteB[sizeOfB * sizeOfB];
+   int tiesAsBlackA[sizeOfA * sizeOfA], tiesAsBlackB[sizeOfB * sizeOfB];
+   int piecesControlledA[sizeOfA * sizeOfA], piecesControlledB[sizeOfB * sizeOfB];
+   int orderA[sizeOfA * sizeOfA], orderB[sizeOfB * sizeOfB];
+   string agentStrA[sizeOfA * sizeOfA], agentStrB[sizeOfB * sizeOfB];
+   int fitnessA[sizeOfA * sizeOfA], fitnessB[sizeOfB * sizeOfB];
+   pair <int, int> fitnessUpdate;
+   int gamesPlayed = 0;
+   for(rowA = 0; rowA < sizeOfA; rowA++)
+   {
+      for(colA = 0; colA < sizeOfA; colA++)
+      {
+         winsAsWhiteA[rowA * sizeOfA + colA] = 0;
+         winsAsBlackA[rowA * sizeOfA + colA] = 0;
+         lossesAsWhiteA[rowA * sizeOfA + colA] = 0;
+         lossesAsBlackA[rowA * sizeOfA + colA] = 0;
+         tiesAsWhiteA[rowA * sizeOfA + colA] = 0;
+         tiesAsBlackA[rowA * sizeOfA + colA] = 0;
+         piecesControlledA[rowA * sizeOfA + colA] = 0;
+         stringstream strstr;
+         strstr << "Org: " << rowA << " , " << colA;
+         agentStrA[rowA * sizeOfA + colA] = strstr.str();
+         strstr.clear();
+      }
+   }
+   for(rowB = 0; rowB < sizeOfB; rowB++)
+   {
+      for(colB = 0; colB < sizeOfB; colB++)
+      {
+         winsAsWhiteB[rowB * sizeOfB + colB] = 0;
+         winsAsBlackB[rowB * sizeOfB + colB] = 0;
+         lossesAsWhiteB[rowB * sizeOfB + colB] = 0;
+         lossesAsBlackB[rowB * sizeOfB + colB] = 0;
+         tiesAsWhiteB[rowB * sizeOfB + colB] = 0;
+         tiesAsBlackB[rowB * sizeOfB + colB] = 0;
+         piecesControlledB[rowB * sizeOfB + colB] = 0;
+         stringstream strstr;
+         strstr << "Org: " << rowB << " , " << colB;
+         agentStrB[rowB * sizeOfB + colB] = strstr.str();
+         strstr.clear();
+      }
+   }
+   for(rowA = 0; rowA < sizeOfA; rowA++)
+   {
+      for(colA = 0; colA < sizeOfA; colA++)
+      {
+         for(rowB = 0; rowB < sizeOfB; rowB++)
+         {
+            for(colB = 0; colB < sizeOfB; colB++)
+            {
+               // black and then white
+               fitnessUpdate = playGame(teamA.getOrganism(rowA, colA), teamB.getOrganism(rowB, colB));
+               teamA.pop.at(rowA).at(colA).updateFitness(fitnessUpdate.first);
+               teamB.pop.at(rowB).at(colB).updateFitness(fitnessUpdate.second);
+               gamesPlayed++;
+               if(fitnessUpdate.first > fitnessUpdate.second)
+               {
+                  winsAsBlackA[rowA * sizeOfA + colA] += 1;
+                  lossesAsWhiteB[rowB * sizeOfB + colB] += 1;
+               }
+               else if (fitnessUpdate.second > fitnessUpdate.first)
+               {
+                  winsAsWhiteB[rowB * sizeOfB + colB] += 1;
+                  lossesAsBlackA[rowA * sizeOfA + colA] += 1;
+               }
+               else
+               {
+                  tiesAsBlackA[rowA * sizeOfA + colA] += 1;
+                  tiesAsWhiteB[rowB * sizeOfB + colB] += 1;
+               }
+               fitnessUpdate = playGame(teamB.getOrganism(rowB, colB), teamB.getOrganism(rowA, colA));
+               teamB.pop.at(rowB).at(colB).updateFitness(fitnessUpdate.first);
+               teamA.pop.at(rowA).at(colA).updateFitness(fitnessUpdate.second);
+               gamesPlayed++;
+               if(fitnessUpdate.first > fitnessUpdate.second)
+               {
+                  winsAsBlackB[rowB * sizeOfB + colB] += 1;
+                  lossesAsWhiteA[rowA * sizeOfA + colA] += 1;
+               }
+               else if (fitnessUpdate.second > fitnessUpdate.first)
+               {
+                  winsAsWhiteA[rowA * sizeOfA + colA] += 1;
+                  lossesAsBlackB[rowB * sizeOfB + colB] += 1;
+               }
+               else
+               {
+                  tiesAsBlackB[rowB * sizeOfB + colB] += 1;
+                  tiesAsWhiteA[rowA * sizeOfA + colA] += 1;
+               }
+            }
+         }
+      }
+   }
+   int totalFit;
+   int pieces;
+   // CHANGE IF WE CHANGE TO 6X6
+   for(rowA = 0; rowA < sizeOfA; rowA++)
+   {
+      for(colA = 0; colA < sizeOfA; colA++)
+      {
+         totalFit = teamA.pop.at(rowA).at(colA).getFitness();
+         fitnessA[rowA * sizeOfA + colA] = totalFit;
+         pieces = totalFit - (winsAsBlackA[rowA * sizeOfA + colA] + winsAsWhiteA[rowA * sizeOfA + colA]) * 64 - (tiesAsBlackA[rowA * sizeOfA + colA] + tiesAsWhiteA[rowA * sizeOfA + colA]) * 32;
+         piecesControlledA[rowA * sizeOfA + colA] = pieces;
+      }
+   }
+   for(rowB = 0; rowB < sizeOfB; rowB++)
+   {
+      for(colB = 0; colB < sizeOfB; colB++)
+      {
+         totalFit = teamB.pop.at(rowB).at(colB).getFitness();
+         fitnessB[rowB * sizeOfB + colB] = totalFit;
+         pieces = totalFit - (winsAsBlackB[rowB * sizeOfB + colB] + winsAsWhiteB[rowB * sizeOfB + colB]) * 64 - (tiesAsBlackB[rowB * sizeOfB + colB] + tiesAsWhiteB[rowB * sizeOfB + colB]) * 32;
+         piecesControlledB[rowB * sizeOfB + colB] = pieces;
+      }
+   }
+   for (i = 0; i < sizeOfA * sizeOfA; i += 1)
+   {
+      orderA[i] = i;
+   }
+   for(i = 0; i < sizeOfB * sizeOfB; i+= 1)
+   {
+      orderB[i] = i;
+   }
+   for (i = 0; i < sizeOfA * sizeOfA - 1; i += 1)
+   {
+      for (j = i + 1; j < sizeOfA * sizeOfA; j += 1)
+      {
+      if (winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] < winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] || winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] == winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] && piecesControlledA[orderA[i]] > piecesControlledA[orderA[j]] || piecesControlledA[orderA[i]] == piecesControlledA[orderA[j]]  && agentStrA[orderB[i]] >= agentStrA[orderB[j]]) // sort the agents from best to wors
+         {
+            temp = orderA[i];
+            orderA[i] = orderA[j];
+            orderA[j] = temp;
+         }
+      }
+   }
+   for (i = 0; i < sizeOfB * sizeOfB - 1; i += 1)
+   {
+      for (j = i + 1; j < sizeOfB * sizeOfB; j += 1)
+      {
+         if (winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] < winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] || winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] == winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] && (piecesControlledB[orderB[i]] > piecesControlledB[orderB[j]] || piecesControlledB[orderB[i]] == piecesControlledB[orderB[j]]  && agentStrB[orderB[i]] >= agentStrB[orderB[j]])) // sort the agents from best to worst
+         {
+            temp = orderB[i];
+            orderB[i] = orderB[j];
+            orderB[j] = temp;
+         }
+      }
+   }
+   cout << "\n" << "Team A: " << "\n"
+        << "Overall standings:       all             as Black          as White      Total #     W / L     Fitness\n"
+        << "                      W    L    T       W    L    T       W    L    T    pieces      Ratio      Score\n";
+   for (i = 0; i < sizeOfA * sizeOfA; i += 1)
+   {
+      double ratio;
+      if (lossesAsBlackA[orderA[i]] + lossesAsWhiteA[orderA[i]] == 0) 
+      {
+         ratio = 1;
+      }
+      else 
+      {
+         ratio = (static_cast<double>(winsAsWhiteA[orderA[i]]) + static_cast<double>(winsAsBlackA[orderA[i]]))/(static_cast<double>((lossesAsWhiteA[orderA[i]]) + static_cast<double>(lossesAsBlackA[orderA[i]])));
+      }
+      cout << setw(18) << left << agentStrA[orderA[i]]
+           << " " << setw(4) << right << winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]]
+           << " " << setw(4) << right << lossesAsWhiteA[orderA[i]] + lossesAsBlackA[orderA[i]]
+           << " " << setw(4) << right << tiesAsWhiteA[orderA[i]] + tiesAsBlackA[orderA[i]]
+           << " " << setw(7) << right << winsAsBlackA[orderA[i]]
+           << " " << setw(4) << right << lossesAsBlackA[orderA[i]]
+           << " " << setw(4) << right << tiesAsBlackA[orderA[i]]
+           << " " << setw(7) << right << winsAsWhiteA[orderA[i]]
+           << " " << setw(4) << right << lossesAsWhiteA[orderA[i]]
+           << " " << setw(4) << right << tiesAsWhiteA[orderA[i]]
+           << " " << setw(8) << right << piecesControlledA[orderA[i]]
+           //<< " " << setw(8) << right << numInvalid[orderA[i]] 
+           << " " << setprecision(5) << setw(11) << right << ratio 
+           << " " << setw(9) << right << fitnessA[orderA[i]] << "\n";
+   }
+   cout << "\n" << "Team B: " << "\n"
+        << "Overall standings:       all             as Black          as White      Total #     W / L     Fitness\n"
+        << "                      W    L    T       W    L    T       W    L    T    pieces      Ratio      Score\n";
+  
+   for (i = 0; i < sizeOfB * sizeOfB; i += 1)
+   {
+      double ratio; 
+      if(lossesAsBlackB[orderB[i]] + lossesAsWhiteB[orderB[i]] == 0) 
+      {
+         ratio = 1;
+      }
+      else 
+      {
+         ratio = (static_cast<double>(winsAsWhiteB[orderB[i]]) + static_cast<double>(winsAsBlackB[orderB[i]]))/(static_cast<double>((lossesAsWhiteB[orderB[i]]) + static_cast<double>(lossesAsBlackB[orderB[i]])));
+      }
+      cout << setw(18) << left << agentStrB[orderB[i]]
+           << " " << setw(4) << right << winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]]
+           << " " << setw(4) << right << lossesAsWhiteB[orderB[i]] + lossesAsBlackB[orderB[i]]
+           << " " << setw(4) << right << tiesAsWhiteB[orderB[i]] + tiesAsBlackB[orderB[i]]
+           << " " << setw(7) << right << winsAsBlackB[orderB[i]]
+           << " " << setw(4) << right << lossesAsBlackB[orderB[i]]
+           << " " << setw(4) << right << tiesAsBlackB[orderB[i]]
+           << " " << setw(7) << right << winsAsWhiteB[orderB[i]]
+           << " " << setw(4) << right << lossesAsWhiteB[orderB[i]]
+           << " " << setw(4) << right << tiesAsWhiteB[orderB[i]]
+           << " " << setw(8) << right << piecesControlledB[orderB[i]]
+           //<< " " << setw(8) << right << numInvalid[orderA[i]] 
+           << " " << setprecision(5) << setw(11) << right << ratio 
+           << " " << setw(9) << right << fitnessB[orderB[i]] << "\n";
+   }
+}
+void Population::printFitnesses()
+{
+   Population populus = *this;
+   int size, i, j;
+   size = populus.pop.size();
+   vector<vector<int> > fitnessVec;
+   fitnessVec = populus.getAllFitnesses();
+   for(i = 0; i < size; i++)
+   {
+      for(j = 0; j < size; j++)
+      {
+         cout << fitnessVec.at(i).at(j) << " + ";
+      }
+      cout << endl;
+   }
+}
 int main()
 {
    vector<unsigned int> layerSizes;
@@ -741,7 +973,7 @@ int main()
    /*layerSizes.push_back(2);
    layerSizes.push_back(1);
    Population populus = Population(layerSizes, 3);
-   populus.assignFittnesses();
+   populus.assignFitnesses();
    Population newGeneration(layerSizes, 3);
    newGeneration = populus.createNextGen();
    cout << "Old population: " << endl;
@@ -766,28 +998,40 @@ int main()
       }
       cout << endl;
    }*/
-   //populus.playNeighbors();
-   //Population newGen = populus.createNextGen();
-   //newGen.printPopulation();
-   
-   //layerSizes.push_back(64);
-   //layerSizes.push_back(8);
-   layerSizes.push_back(3);
+
+   // TESTING A BASIC LOAD SAVE POPULATION:
+   /*layerSizes.push_back(3);
    layerSizes.push_back(2);
    layerSizes.push_back(1);
-   int sizePop = 3;
+   int sizePop = 3; 
    Population populus = Population(layerSizes, sizePop);
    populus.savePopulation(1);
    Population newPopulus;
-   newPopulus = populus.loadPopulation();
-   //cout << newPopulus.getSize() << endl;
-   //newPopulus.setSize(3);
+   newPopulus = newPopulus.loadPopulation();
    cout << "old population: " << endl;
    populus.printPopulation();
    cout << endl << endl << "Loaded Population" << endl;
-   // NEED TO FIND A WAY TO TAKE THIS OUT LATER
-   newPopulus.setSize(3);
    newPopulus.printPopulation();
+   */
+   
+   layerSizes.push_back(64);
+   layerSizes.push_back(8);
+   layerSizes.push_back(1);
+   Population popA = Population(layerSizes, 3);
+   Population popB = Population(layerSizes, 4);
+   popA.popVSpop(popB);
+   /*
+   cout << "fitnesses of A" << endl;
+   popA.printFitnesses();
+   cout << "fitnesses of B" << endl;
+   popB.printFitnesses();
+   popA.resetFitnesses();
+   popB.resetFitnesses();
+   popA.printFitnesses();
+   popB.printFitnesses();
+   */
+   //NEED TO CLEAR FITNESSES AFTER POPVSPOP;
+   //using argc and argv to take in a name of a file to load
    
    /*Organism black1gen = populus.getOrganism(4, 4);
    Population pop10thGen = populus.runGenerations(10, layerSizes, 10);
@@ -806,4 +1050,5 @@ int main()
    cout << "white 20th gen: " << scores.second << endl;
    */
    return 0;
+   
 }
