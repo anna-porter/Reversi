@@ -27,11 +27,18 @@ class NeuralNet
       NeuralNet crossover(NeuralNet, vector<unsigned int>);
       void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
       void printWeights();
+      void prettyPrintWeights();
       void saveWeights(ofstream&);
       double calculateNet(vector<double>);
       NeuralNet& operator=(const NeuralNet &rhs);
       double mutation(double);
+      double activation(double);
       double sigmoid(double);
+      double softsign(double);
+      double rectifier(double);
+      double softplus(double);
+      double threshold(double);
+      
 };
 
 #endif
