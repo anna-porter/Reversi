@@ -7,17 +7,12 @@ int coinFlip();
 double randomDouble();
 int randomInt(int n);
 //int reversiAgentOneMove(Board, player, NeuralNet&);
-// weight storage
-// blondie24 page 41
-// add activation function
 NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
 {
    this->weights.clear();
    this->weights = rhs.getWeights();
    return *this;
 }
-
-
 
 NeuralNet::NeuralNet()
 {
@@ -171,7 +166,7 @@ double NeuralNet::calculateNet(vector<double> input)
          if(i != currentWeights.size() - 2)
          {
             //cout << "not last layer" << endl;
-            summation = sigmoid(summation);
+            summation = activation(summation);
             //cout << "Output = " << summation << endl;
          }
          nextInputs.push_back(summation);
@@ -222,7 +217,7 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
             gene = child.weights.at(i).at(j).at(k);
-            //child.weights.at(i).at(j).at(k) = mutation(gene);
+            child.weights.at(i).at(j).at(k) = mutation(gene);
          }
       }
    }
@@ -242,19 +237,49 @@ void NeuralNet::printWeights()
       {
          for (k = 0; k < testWeights.at(i).at(j).size(); k++)
          {
-            cout << i << j << k << " : "  << fixed << testWeights.at(i).at(j).at(k) << " , ";
+            cout /*<< i << j << k << " : " */ << fixed << testWeights.at(i).at(j).at(k) << " , ";
          }
          cout << endl;
       }
       cout << endl;
    }
 } 
+/*
+void NeuralNet::prettyPrintWeights()
+{
+   vector<vector<vector<double> > > testWeights;
+   testWeights = this->getWeights();
+   cout.precision(17);
+   unsigned int i, j, k;
+   
+   for(i = 0; i < testWeights.size(); i++)
+   {
+      for(j = 0; j < testWeights.at(i).size(); j++)
+      {
+         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
+         {
+            if(k % 8 ==0)
+            {
+               cout << endl;
+            }
+            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
+         }
+         cout << endl;
+      }
+      cout << endl;
+   }
+}
+*/
 void NeuralNet::saveWeights(ofstream &fout)
 {
    vector<vector<vector<double> > > givenWeights;
    givenWeights = this->getWeights();
+   //cout << givenWeights.size() << endl;
+   //cout << givenWeights.at(0).size() << endl;
+   //cout << givenWeights.at(0).at(0).size() << endl;
    cout.precision(17);
    unsigned int i, j, k;
+   //int numweights = 0;
    for(i = 0; i < givenWeights.size(); i++)
    {
       fout << "newLayer" << endl;
@@ -263,15 +288,21 @@ void NeuralNet::saveWeights(ofstream &fout)
          fout << "newNeuron" << endl;
          for (k = 0; k < givenWeights.at(i).at(j).size(); k++)
          {
-            
+            //numWeights++;
             fout << fixed << setprecision(17) << givenWeights.at(i).at(j).at(k) << ",";
          }
          fout << endl;
       }
    }
+   //cout << "numWeights " <<  numWeights << endl;
    fout << "endOfOrganism" << endl;
 }
 
+double NeuralNet::activation(double x)
+{
+   return rectifier(x); 
+} 
+  
 double NeuralNet::mutation(double gene)
 {
    if(randomInt(100) == 1)
@@ -281,7 +312,34 @@ double NeuralNet::mutation(double gene)
    }
    return gene;
 }
+//new
+double NeuralNet::softplus(double x)
+{
+   return log(1 + exp(x));
+}
+double NeuralNet::rectifier(double x)
+{
+   if(x < 0)
+   {
+      return 0;
+   }
+   return x;
+}
 
+double NeuralNet::softsign(double x)
+{
+   return x / (1 + abs(x));
+}
+
+double NeuralNet::threshold(double x)
+{
+   if (0 > x)
+   {
+      return 0;
+   }
+   return 1;
+}
+      
 double NeuralNet::sigmoid(double x)
 {
    double eToTheX = exp(x);
