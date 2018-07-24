@@ -3,6 +3,7 @@
 #include "evolution.h"
 #include <sstream>
 int reversiAgentOneMove(Board, player, Organism);
+//int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org);
 Organism::Organism(vector<unsigned int> layerSizes)
 {
    brain = NeuralNet(layerSizes);
@@ -53,7 +54,7 @@ void Population::playNeighbors()
    int i, j, rowInc, colInc, row, column;
    int size;
    size = this->pop.size();
-   cout << "this.size() = " << this->pop.size() << endl;
+   //cout << "this.size() = " << this->pop.size() << endl;
    //cout << size << endl;
    pair<int, int> fitnessUpdate;
    for(i = 0; i < size; i++)
@@ -88,6 +89,7 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
    srandom(time(0));
    // black and then white for this pair
    pair<int, int> fitnesses;
+   pair<int, int> finalScore;
    int emptyPieces;
    fitnesses.first = 0;
    fitnesses.second = 0;
@@ -107,7 +109,16 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          if(!reversiBoard.isValidMove(playerBlack_move, Black))
          {
             cout << playerBlack_move << " : " << "Black made an invalid move" << endl;
-            //reversiBoard.printBoard();
+            finalScore = reversiBoard.getScore();
+            // First Organism gets 64 points for winning,
+            fitnesses.first += size * size;
+            // see how many empty pieces r on the board
+            emptyPieces = size * size - (finalScore.first + finalScore.second);
+            // winner takes credit for empty spaces.
+            fitnesses.first = fitnesses.first + emptyPieces + finalScore.first;
+            // loser only gets the number of his tiles
+            fitnesses.second += finalScore.second;
+            return fitnesses;
          }
          // Update the board for player A
          else
@@ -120,11 +131,10 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          // if playerA made a move that won them the game then return result
          if(reversiBoard.isGameOver())
          {
-            pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
-            // White is first in this pair.
-            //cout << "White: " << finalScore.first << endl;
-            //cout << "Black: " << finalScore.second << endl;
+            // black is first in this pair.
+            //cout << "White: " << finalScore.second << endl;
+            //cout << "Black: " << finalScore.first << endl;
             // WINNER TAKES EMPTY SPACES
             // if black wins
             if(finalScore.first > finalScore.second)
@@ -164,8 +174,15 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          // if it is an invalid move, A automatically wins
          if(!reversiBoard.isValidMove(playerWhite_move, White))
          {
+            finalScore = reversiBoard.getScore();
+            //cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
             cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
-            //reversiBoard.printBoard();
+            reversiBoard.printBoard();
+            fitnesses.second += size * size;
+            emptyPieces = size * size - (finalScore.second + finalScore.first);
+            fitnesses.second = fitnesses.second + emptyPieces + finalScore.second;
+            fitnesses.first += finalScore.first;
+            return fitnesses;
          }
          // Update the board for player
          else
@@ -177,10 +194,8 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          // if playerBlack made a move that won them the game then return result
          if(reversiBoard.isGameOver())
          {
-            pair<int, int> finalScore;
+            
             finalScore = reversiBoard.getScore();
-            //cout << "Black: " << finalScore.first << endl;
-            //cout << "White: " << finalScore.second << endl;
             // WINNER TAKES EMPTY SPACES
             // if black wins
             if(finalScore.first > finalScore.second)
@@ -226,6 +241,7 @@ pair<int, int> Population::playGamePrint(Organism blackPlayer, Organism whitePla
    srandom(time(0));
    // white and then black for this pair
    pair<int, int> fitnesses;
+   pair<int, int> finalScore;
    int emptyPieces;
    fitnesses.first = 0;
    fitnesses.second = 0;
@@ -246,6 +262,16 @@ pair<int, int> Population::playGamePrint(Organism blackPlayer, Organism whitePla
          {
             cout << playerBlack_move << " : " << "Black made an invalid move" << endl;
             reversiBoard.printBoard();
+            finalScore = reversiBoard.getScore();
+            // First Organism gets 64 points for winning,
+            fitnesses.first += size * size;
+            // see how many empty pieces r on the board
+            emptyPieces = size * size - (finalScore.first + finalScore.second);
+            // winner takes credit for empty spaces.
+            fitnesses.first = fitnesses.first + emptyPieces + finalScore.first;
+            // loser only gets the number of his tiles
+            fitnesses.second += finalScore.second;
+            return fitnesses;
          }
          // Update the board for player A
          else
@@ -258,11 +284,10 @@ pair<int, int> Population::playGamePrint(Organism blackPlayer, Organism whitePla
          // if playerA made a move that won them the game then return result
          if(reversiBoard.isGameOver())
          {
-            pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
-            // White is first in this pair.
-            //cout << "White: " << finalScore.first << endl;
-            //cout << "Black: " << finalScore.second << endl;
+            // black is first in this pair.
+            //cout << "White: " << finalScore.second << endl;
+            //cout << "Black: " << finalScore.first << endl;
             // WINNER TAKES EMPTY SPACES
             // if black wins
             if(finalScore.first > finalScore.second)
@@ -302,9 +327,15 @@ pair<int, int> Population::playGamePrint(Organism blackPlayer, Organism whitePla
          // if it is an invalid move, A automatically wins
          if(!reversiBoard.isValidMove(playerWhite_move, White))
          {
+            finalScore = reversiBoard.getScore();
             //cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
             cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
             reversiBoard.printBoard();
+            fitnesses.second += size * size;
+            emptyPieces = size * size - (finalScore.second + finalScore.first);
+            fitnesses.second = fitnesses.second + emptyPieces + finalScore.second;
+            fitnesses.first += finalScore.first;
+            return fitnesses;
          }
          // Update the board for player
          else
@@ -316,7 +347,6 @@ pair<int, int> Population::playGamePrint(Organism blackPlayer, Organism whitePla
          // if playerBlack made a move that won them the game then return result
          if(reversiBoard.isGameOver())
          {
-            pair<int, int> finalScore;
             finalScore = reversiBoard.getScore();
             //cout << "Black: " << finalScore.first << endl;
             //cout << "White: " << finalScore.second << endl;
@@ -377,7 +407,51 @@ vector<vector<int> > Population::getAllFitnesses()
    }
    return fitnessVec;
 }
-
+/*
+int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org)
+{
+   vector<double> inputs;
+   Board copyBoard;
+   int bestMove, lastMove;
+   unsigned int i;
+   double maxHeuristic, heuristic;
+   NeurelNet network = org.getNet();
+   vector<int> availableMoves;
+   availableMoves = reversiBoard.getValidMoves(mover);
+   lastMove = availableMoves.at(0);
+   for(i = 0; i < availableMoves.size())
+   {
+      
+   }
+   miniMax(reversiBoard, lastMove, bestMove, 0);
+   return bestMove;
+}
+int miniMax(Board reversiBoard, int lastMove, int &bestMove, int depth, int mover)
+{
+   // Take the last move considered;
+   board.makeMove(lastMove, mover);
+   int depthLimit = 3;
+   int i;
+   player enemy;
+   if(mover == White)
+   {
+      enemy = Black;
+   }
+   else 
+   {
+      enemy = White;
+   }
+   // If we are maxing the depth is even
+   if(depth % 2 == 0)
+   {
+      if(!reversiBoard.isGameOver() || depth > depthLimit)
+      {
+         return -1; // idk if this is right
+      }
+      for(i
+   }
+   
+}*/
 int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
 {
    vector<double> inputs;
@@ -470,7 +544,7 @@ Population Population::createNextGen()
             for(colInc = -1; colInc <= 1; colInc++)
             {
                if(rowInc != colInc)
-               {
+               { 
                   row = (i + size + rowInc) % size;
                   column = (j + size + colInc) % size;
                   currentFit = oldGen.pop.at(row).at(column).getFitness();
@@ -503,7 +577,7 @@ Population Population::createNextGen()
             if(randomNum <= condition && !parentFound)
             {
                parentFound = true;
-               cout << "Organism " <<i << j<< "picked parent " << k << " at " << parentRow.at(k) << parentColumn.at(k)  << endl;
+               //cout << "Organism " <<i << j<< "picked parent " << k << " at " << parentRow.at(k) << parentColumn.at(k)  << endl;
                //cout << k << endl;
                parentOrg = parentCandidates.at(k);
             }
@@ -540,26 +614,6 @@ void Population::assignFitnesses()
    }
 }
 
-Population Population::runGenerations(int generations, vector<unsigned int> layerSizes, int size)
-{
-   int i;
-   Population currentGen = *this;
-   Population nextGen(layerSizes, size);
-   for(i = 0; i < generations; i++)
-   {
-      cout << "Generation " << i << endl;
-      currentGen.playNeighbors();
-      nextGen = currentGen.createNextGen();
-      currentGen = nextGen;
-      if(i % 10)
-      {
-         currentGen.savePopulation(i);
-      }
-   }
-   return currentGen;
-   // save after about 100 generations;
-}
-
 Population& Population::operator=(const Population &rhs)
 {
    this->pop.clear();
@@ -569,7 +623,7 @@ Population& Population::operator=(const Population &rhs)
 
 void Population::printPopulation()
 {
-   cout << "inside Print population" << endl;
+   //cout << "inside Print population" << endl;
    Population populus = *this;
    int size, i, j;
    size = populus.pop.size();
@@ -579,7 +633,7 @@ void Population::printPopulation()
    {
       for(j = 0; j < size; j++)
       {
-         cout << "Organism " << i << " , " << j << " : " << endl;
+         //cout << "Organism " << i << " , " << j << " : " << endl;
          network = populus.pop.at(i).at(j).getNet();
          network.printWeights();
       }
@@ -587,7 +641,7 @@ void Population::printPopulation()
 }
 
 void Population::resetFitnesses()
-{
+{ 
    Population populus = *this;
    int i, j;
    int size = populus.pop.size();
@@ -599,46 +653,84 @@ void Population::resetFitnesses()
       }
    }
 }
-string fileString(int genNum)
+
+Population Population::runGenerations(int generations, vector<unsigned int> layerSizes, int size, int offset, string qualifier)
 {
-   stringstream strstr;
-   strstr << "Gen_" << genNum << ".txt";
-   return strstr.str();
+   int i;
+   Population currentGen = *this;
+   Population nextGen(layerSizes, size);
+   for(i = 0; i < generations; i++)
+   {
+      if(i % 10 == 0)
+      {
+         cout << "Generation " << i << endl;
+      }
+      currentGen.playNeighbors();
+      nextGen = currentGen.createNextGen();
+      currentGen = nextGen;
+      if(i % 500 == 0)
+      {
+         currentGen.savePopulation(i, offset, qualifier);
+      }
+   }
+   return currentGen;
+   // save after about 100 generations;
 }
-void Population::savePopulation(int genNum)
+
+void Population::printRep(string fileName)
+{
+   Population populus = *this;
+   //int size = populus.pop.size();
+   ofstream fout;
+   fout.open(fileName.c_str());
+   //cout << "getting rep" << endl;
+   //int mid = size / 2;
+   Organism rep = populus.pop.at(0).at(0);
+   vector<vector<vector<double> > > testWeights;
+   testWeights = rep.getNet().getWeights();
+   fout.precision(5);
+   unsigned int i, j, k;
+   //cout << "printing weights" << endl;
+   fout << testWeights.at(0).at(0).at(0) << endl;
+   for(i = 0; i < testWeights.size(); i++)
+   {
+      for(j = 0; j < testWeights.at(i).size(); j++)
+      {
+         for (k = 1; k < testWeights.at(i).at(j).size(); k++)
+         {
+            if(k % 8 == 1)
+            {
+               fout << endl;
+            }
+            fout << fixed << setw(7) << testWeights.at(i).at(j).at(k) << " , ";
+         }
+         fout << endl;
+      }
+      fout << endl;
+   }
+}
+
+void Population::savePopulation(int genNum, int offset, string qualifier)
 {
    //https://stackoverflow.com/questions/13108973/creating-file-names-automatically-c
    Population populus = *this;
-   //int num;
+   
+   //int num; 
    //int digit;
-   ofstream fout;
-   //string fileName = "" + fileString(genNum);
-   /*string fileName = "Gen_ ";
-   while(genNum > 0)
-   {
-      digit = genNum % 10;
-      genNum =  genNum / 10;
-      switch (digit)
-      {
-         case 1: fileName += "1"; break;
-         case 2: fileName += "2"; break;
-         case 3: fileName += "3"; break;
-         case 4: fileName += "4"; break;
-         case 5: fileName += "5"; break;
-         case 6: fileName += "6"; break;
-         case 7: fileName += "7"; break;
-         case 8: fileName += "8"; break;
-         case 9: fileName += "9"; break;
-         case 0: fileName += "0"; break;
-         
-      }
-   }
-   fileName += ".txt";*/
-   fout.open("testing.txt");
+   string fileString = "";
+   genNum += offset;
+   stringstream genNumString; 
+   genNumString << genNum;
+   //genNumString.str();
+   fileString += "Gen_" + genNumString.str() + qualifier + ".txt";
+   
+   ofstream fout; 
+   // name of directory forward slash name of  file
+   fout.open(fileString.c_str());
    int i, j, size;
    size = populus.pop.size();
    NeuralNet network;
-   fout << "size " << endl << size << endl;
+   fout << "size" << endl << size << endl;
    for(i = 0; i < size; i++)
    {
       for(j = 0;  j < size; j++)
@@ -651,10 +743,14 @@ void Population::savePopulation(int genNum)
 }
 
 // asked Michael for help on this function;
-Population Population::loadPopulation()
+Population Population::loadPopulation(string fileName)
 {
    ifstream input;
-   input.open("Gen_1.txt");
+   stringstream strstr;
+   strstr << fileName;
+   string fileString;
+   fileString += strstr.str();
+   input.open(fileString.c_str());
    string token, weightString, numString;
    int lastDig, size;
    size = 0; // to keep compuler from warning me
@@ -672,6 +768,7 @@ Population Population::loadPopulation()
       if(token == "size")
       {
          getline(input, token);
+         //cout << "Token is: " << token << endl;
          size = atof(token.c_str());
       }
       while(getline(input, token))
@@ -728,7 +825,7 @@ Population Population::loadPopulation()
    return generatedPop;
 }
 
-void Population::popVSpop(Population teamB)
+string Population::popVSpop(Population teamB)
 {
    Population teamA = *this;
    int sizeOfA, sizeOfB, rowA, colA, rowB, colB, i, j, temp;
@@ -758,7 +855,7 @@ void Population::popVSpop(Population teamB)
          tiesAsBlackA[rowA * sizeOfA + colA] = 0;
          piecesControlledA[rowA * sizeOfA + colA] = 0;
          stringstream strstr;
-         strstr << "Org: " << rowA << " , " << colA;
+         strstr << "Org: " << rowA << "," << colA;
          agentStrA[rowA * sizeOfA + colA] = strstr.str();
          strstr.clear();
       }
@@ -866,7 +963,7 @@ void Population::popVSpop(Population teamB)
    {
       for (j = i + 1; j < sizeOfA * sizeOfA; j += 1)
       {
-      if (winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] < winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] || winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] == winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] && piecesControlledA[orderA[i]] > piecesControlledA[orderA[j]] || piecesControlledA[orderA[i]] == piecesControlledA[orderA[j]]  && agentStrA[orderB[i]] >= agentStrA[orderB[j]]) // sort the agents from best to wors
+      if (winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] < winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] || (winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]] == winsAsWhiteA[orderA[j]] + winsAsBlackA[orderA[j]] && piecesControlledA[orderA[i]] > piecesControlledA[orderA[j]]) || (piecesControlledA[orderA[i]] == piecesControlledA[orderA[j]]  && agentStrA[orderB[i]] >= agentStrA[orderB[j]])) // sort the agents from best to worst
          {
             temp = orderA[i];
             orderA[i] = orderA[j];
@@ -878,7 +975,7 @@ void Population::popVSpop(Population teamB)
    {
       for (j = i + 1; j < sizeOfB * sizeOfB; j += 1)
       {
-         if (winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] < winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] || winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] == winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] && (piecesControlledB[orderB[i]] > piecesControlledB[orderB[j]] || piecesControlledB[orderB[i]] == piecesControlledB[orderB[j]]  && agentStrB[orderB[i]] >= agentStrB[orderB[j]])) // sort the agents from best to worst
+         if (winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] < winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] || (winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]] == winsAsWhiteB[orderB[j]] + winsAsBlackB[orderB[j]] && piecesControlledB[orderB[i]] > piecesControlledB[orderB[j]]) || (piecesControlledB[orderB[i]] == piecesControlledB[orderB[j]]  && agentStrB[orderB[i]] >= agentStrB[orderB[j]])) // sort the agents from best to worst
          {
             temp = orderB[i];
             orderB[i] = orderB[j];
@@ -886,23 +983,35 @@ void Population::popVSpop(Population teamB)
          }
       }
    }
-   cout << "\n" << "Team A: " << "\n"
-        << "Overall standings:       all             as Black          as White      Total #     W / L     Fitness\n"
-        << "                      W    L    T       W    L    T       W    L    T    pieces      Ratio      Score\n";
+   cout << "\n" << "Team A: " << "                                                                                                 TeamB: \n"
+        << "Overall:           all             as Black          as White       Fitness" 
+        << "    Overall:             all             as Black          as White       Fitness\n"
+        << "                W    L    T       W    L    T       W    L    T      Score"
+        << "                      W    L    T       W    L    T       W    L    T      Score\n";
    for (i = 0; i < sizeOfA * sizeOfA; i += 1)
    {
-      double ratio;
+      /*double ratioA, ratioB;
       if (lossesAsBlackA[orderA[i]] + lossesAsWhiteA[orderA[i]] == 0) 
       {
-         ratio = 1;
+         ratioA = 1;
       }
       else 
       {
-         ratio = (static_cast<double>(winsAsWhiteA[orderA[i]]) + static_cast<double>(winsAsBlackA[orderA[i]]))/(static_cast<double>((lossesAsWhiteA[orderA[i]]) + static_cast<double>(lossesAsBlackA[orderA[i]])));
+         ratioA = (static_cast<double>(winsAsWhiteA[orderA[i]]) + static_cast<double>(winsAsBlackA[orderA[i]]))/(static_cast<double>((lossesAsWhiteA[orderA[i]]) + static_cast<double>(lossesAsBlackA[orderA[i]])));
       }
-      cout << setw(18) << left << agentStrA[orderA[i]]
+      if(lossesAsBlackB[orderB[i]] + lossesAsWhiteB[orderB[i]] == 0) 
+      {
+         ratioB = 1;
+      }
+      else 
+      {
+         ratioB = (static_cast<double>(winsAsWhiteB[orderB[i]]) + static_cast<double>(winsAsBlackB[orderB[i]]))/(static_cast<double>((lossesAsWhiteB[orderB[i]]) + static_cast<double>(lossesAsBlackB[orderB[i]])));
+      }*/
+      cout << setw(12) << left << agentStrA[orderA[i]]
            << " " << setw(4) << right << winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]]
+           //totalWinsA += winsAsWhiteA[orderA[i]] + winsAsBlackA[orderA[i]];
            << " " << setw(4) << right << lossesAsWhiteA[orderA[i]] + lossesAsBlackA[orderA[i]]
+            //totalLossesA += lossesAsWhiteA[orderA[i]] + lossesAsBlackA[orderA[i]];
            << " " << setw(4) << right << tiesAsWhiteA[orderA[i]] + tiesAsBlackA[orderA[i]]
            << " " << setw(7) << right << winsAsBlackA[orderA[i]]
            << " " << setw(4) << right << lossesAsBlackA[orderA[i]]
@@ -910,11 +1019,27 @@ void Population::popVSpop(Population teamB)
            << " " << setw(7) << right << winsAsWhiteA[orderA[i]]
            << " " << setw(4) << right << lossesAsWhiteA[orderA[i]]
            << " " << setw(4) << right << tiesAsWhiteA[orderA[i]]
-           << " " << setw(8) << right << piecesControlledA[orderA[i]]
+           //<< " " << setw(8) << right << piecesControlledA[orderA[i]]
            //<< " " << setw(8) << right << numInvalid[orderA[i]] 
-           << " " << setprecision(5) << setw(11) << right << ratio 
-           << " " << setw(9) << right << fitnessA[orderA[i]] << "\n";
+           //<< " " << setprecision(5) << setw(11) << right << ratioA
+           << " " << setw(9) << right << fitnessA[orderA[i]]
+           << "       "
+           << setw(12) << left << agentStrB[orderB[i]]
+           << " " << setw(4) << right << winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]]
+           << " " << setw(4) << right << lossesAsWhiteB[orderB[i]] + lossesAsBlackB[orderB[i]]
+           << " " << setw(4) << right << tiesAsWhiteB[orderB[i]] + tiesAsBlackB[orderB[i]]
+           << " " << setw(7) << right << winsAsBlackB[orderB[i]]
+           << " " << setw(4) << right << lossesAsBlackB[orderB[i]]
+           << " " << setw(4) << right << tiesAsBlackB[orderB[i]]
+           << " " << setw(7) << right << winsAsWhiteB[orderB[i]]
+           << " " << setw(4) << right << lossesAsWhiteB[orderB[i]]
+           << " " << setw(4) << right << tiesAsWhiteB[orderB[i]]
+           //<< " " << setw(8) << right << piecesControlledB[orderB[i]]
+           //<< " " << setw(8) << right << numInvalid[orderA[i]] 
+           //<< " " << setprecision(5) << setw(11) << right << ratioB 
+           << " " << setw(9) << right << fitnessB[orderB[i]] << "\n";
    }
+   /*
    cout << "\n" << "Team B: " << "\n"
         << "Overall standings:       all             as Black          as White      Total #     W / L     Fitness\n"
         << "                      W    L    T       W    L    T       W    L    T    pieces      Ratio      Score\n";
@@ -930,7 +1055,7 @@ void Population::popVSpop(Population teamB)
       {
          ratio = (static_cast<double>(winsAsWhiteB[orderB[i]]) + static_cast<double>(winsAsBlackB[orderB[i]]))/(static_cast<double>((lossesAsWhiteB[orderB[i]]) + static_cast<double>(lossesAsBlackB[orderB[i]])));
       }
-      cout << setw(18) << left << agentStrB[orderB[i]]
+      cout << setw(15) << left << agentStrB[orderB[i]]
            << " " << setw(4) << right << winsAsWhiteB[orderB[i]] + winsAsBlackB[orderB[i]]
            << " " << setw(4) << right << lossesAsWhiteB[orderB[i]] + lossesAsBlackB[orderB[i]]
            << " " << setw(4) << right << tiesAsWhiteB[orderB[i]] + tiesAsBlackB[orderB[i]]
@@ -944,8 +1069,31 @@ void Population::popVSpop(Population teamB)
            //<< " " << setw(8) << right << numInvalid[orderA[i]] 
            << " " << setprecision(5) << setw(11) << right << ratio 
            << " " << setw(9) << right << fitnessB[orderB[i]] << "\n";
+   }*/
+   
+   int totalWinsA, totalLossesA, totalWinsB, totalLossesB;
+   totalWinsA = 0;
+   totalLossesA = 0;
+   totalWinsB = 0;
+   totalLossesB = 0;
+   stringstream returnstring;
+   for(i = 0; i < sizeOfA * sizeOfA; i += 1)
+   {
+      totalWinsA += winsAsBlackA[orderA[i]] + winsAsWhiteA[orderA[i]];
+      totalLossesA += lossesAsBlackA[orderA[i]] + lossesAsWhiteA[orderA[i]];
    }
+   for(i = 0; i < sizeOfB * sizeOfB; i += 1)
+   {
+      totalWinsB += winsAsBlackB[orderA[i]] + winsAsWhiteB[orderA[i]];
+      totalLossesB += lossesAsBlackB[orderA[i]] + lossesAsWhiteB[orderA[i]];
+   }
+   returnstring << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
+   returnstring << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl;
+   cout << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
+   cout << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl;
+   return returnstring.str();
 }
+
 void Population::printFitnesses()
 {
    Population populus = *this;
@@ -962,15 +1110,17 @@ void Population::printFitnesses()
       cout << endl;
    }
 }
+/*
 int main()
 {
    vector<unsigned int> layerSizes;
    srandom(time(0));
-   
+   */
    // Testing for crossover on a population with small neuralnets
    //vector<unsigned int> layerSizes;
-   //layerSizes.push_back(3);
-   /*layerSizes.push_back(2);
+   /*
+   layerSizes.push_back(3);
+   layerSizes.push_back(2);
    layerSizes.push_back(1);
    Population populus = Population(layerSizes, 3);
    populus.assignFitnesses();
@@ -1013,13 +1163,16 @@ int main()
    cout << endl << endl << "Loaded Population" << endl;
    newPopulus.printPopulation();
    */
-   
+   // TESTING A BASIC POPULATION VS POPULATION
+   /*
    layerSizes.push_back(64);
    layerSizes.push_back(8);
    layerSizes.push_back(1);
    Population popA = Population(layerSizes, 3);
    Population popB = Population(layerSizes, 4);
    popA.popVSpop(popB);
+   */
+   
    /*
    cout << "fitnesses of A" << endl;
    popA.printFitnesses();
@@ -1049,6 +1202,7 @@ int main()
    cout << "Black 1st gen: " << scores.first << endl;
    cout << "white 20th gen: " << scores.second << endl;
    */
+   /*
    return 0;
    
-}
+}*/
