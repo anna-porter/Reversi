@@ -49,14 +49,16 @@ class Population
       pair<int, int> playGame(Organism, Organism);
       pair<int, int> playGamePrint(Organism, Organism);
       Population createNextGen();
-      Population runGenerations(int, vector<unsigned int>, int);
+      Population runGenerations(int, vector<unsigned int>, int, int, string);
       void printFitnesses();
       void assignFitnesses();
       void resetFitnesses();
-      Population loadPopulation();
-      void savePopulation(int);
+      void printRep(string);
+      Population loadPopulation(string);
+      void savePopulation(int, int, string);
       void printPopulation();
-      void popVSpop(Population);
+      string popVSpop(Population);
       Population& operator=(const Population &rhs);
 };
+int reversiAgentOneMove(Board, player, Organism);
 #endif
