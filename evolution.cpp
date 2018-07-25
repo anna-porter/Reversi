@@ -4,22 +4,27 @@
 #include <sstream>
 int reversiAgentOneMove(Board, player, Organism);
 //int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org);
-Organism::Organism(vector<unsigned int> layerSizes)
+Organism::Organism(vector<unsigned int> layerSizes, ActFunc myFunction, int depth)
 {
    brain = NeuralNet(layerSizes);
    fitness = 0;
+   myFunc = myFunction;
    this->layerSizes = layerSizes;
+   depthLimit = depth;
 }
 
-Organism::Organism(vector<vector<vector<double> > > netweights)
+Organism::Organism(vector<vector<vector<double> > > netweights, ActFunc myFunction, int depth)
 {
    brain = NeuralNet(netweights);
+   myFunc = myFunction;
+   depthLimit = depth;
 }
 
 Organism::Organism()
 {
    fitness = 0;
    layerSizes.clear();
+   depthLimit = 0;
 }
 
 Population::Population(vector<vector<Organism> > newPop)
@@ -27,16 +32,16 @@ Population::Population(vector<vector<Organism> > newPop)
    pop = newPop;
 }
 
-Population::Population(vector<unsigned int> layerSizes, int popSize)
+Population::Population(vector<unsigned int> layerSizes, int popSize, ActFunc myFunction, int depthLim)
 {
-   Organism currentGuy = Organism(layerSizes);
+   Organism currentGuy = Organism(); 
    int i, j;
    vector<Organism> row;
    for(i = 0; i < popSize; i++)
    {
       for(j = 0; j < popSize; j++)
       {
-         currentGuy = Organism(layerSizes);
+         currentGuy = Organism(layerSizes, myFunction, depthLim);
          row.push_back(currentGuy);
       }
       pop.push_back(row);
@@ -463,6 +468,7 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    bestMove = -1;
    heuristic = 0;
    NeuralNet network = org.getNet();
+   ActFunc currentFunction = org.getActFunc();
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    //cout << "num of avail moves : "  << availableMoves.size() << endl;
@@ -475,7 +481,7 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
       {
          copyBoard.makeMove(availableMoves.at(i), mover);
          inputs = copyBoard.boardToInput(mover);
-         heuristic = network.calculateNet(inputs);
+         heuristic = network.calculateNet(inputs, currentFunction);
          if(heuristic > maxHeuristic)
          {
             maxHeuristic = heuristic;
@@ -503,8 +509,10 @@ Population Population::createNextGen()
    size = this->pop.size();
    Population oldGen = *this;
    vector<unsigned int> layers = oldGen.pop.at(0).at(0).getLayerSizes();
-   Population nextGen(layers, size);
-   Organism parentOrg(layers);
+   ActFunc function = oldGen.pop.at(0).at(0).getActFunc();
+   int depth = oldGen.pop.at(0).at(0).getDepth();
+   Population nextGen(layers, size, function, depth);
+   Organism parentOrg(layers, function, depth);
    vector<Organism> parentCandidates;
    vector<int> fitnessProb;
    int randomNum, total;
@@ -593,6 +601,8 @@ Population Population::createNextGen()
          father = parentOrg.getNet();
          child = father.crossover(mother, layers);
          nextGen.pop.at(i).at(j).setNet(child);
+         nextGen.pop.at(i).at(j).setActFunc(function);
+         nextGen.pop.at(i).at(j).setDepth(depth);
       }
    }
    return nextGen;
@@ -658,9 +668,15 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
 {
    int i;
    Population currentGen = *this;
-   Population nextGen(layerSizes, size);
+   int depth = currentGen.pop.at(0).at(0).getDepth();
+   ActFunc function = currentGen.pop.at(0).at(0).getActFunc();
+   Population nextGen(layerSizes, size, function, depth);
    for(i = 0; i < generations; i++)
    {
+      if(i % 500 == 0)
+      {
+         currentGen.savePopulation(i, offset, qualifier);
+      }
       if(i % 10 == 0)
       {
          cout << "Generation " << i << endl;
@@ -668,10 +684,6 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
       currentGen.playNeighbors();
       nextGen = currentGen.createNextGen();
       currentGen = nextGen;
-      if(i % 500 == 0)
-      {
-         currentGen.savePopulation(i, offset, qualifier);
-      }
    }
    return currentGen;
    // save after about 100 generations;
@@ -712,25 +724,59 @@ void Population::printRep(string fileName)
 
 void Population::savePopulation(int genNum, int offset, string qualifier)
 {
+   //cout << "Saving" << endl;
    //https://stackoverflow.com/questions/13108973/creating-file-names-automatically-c
    Population populus = *this;
    
    //int num; 
    //int digit;
+   ActFunc currentFunc = populus.getOrganism(0,0).getActFunc();
    string fileString = "";
    genNum += offset;
    stringstream genNumString; 
-   genNumString << genNum;
+   genNumString << "/";
+   string functionName;
+   if(currentFunc == Sigmoid)
+   {
+      genNumString << "Sigmoid";
+      functionName = "Sigmoid";
+   }
+   else if(currentFunc == Softsign)
+   {
+      genNumString << "Softsign";
+      functionName = "Softsign";
+   }
+   else if(currentFunc == Threshold)
+   {
+      genNumString << "Threshold";
+      functionName = "Threshold";
+   }
+   else if(currentFunc == Softplus)
+   {
+      genNumString << "Softplus";
+      functionName = "Softplus";
+   }
+   else if(currentFunc == Rectifier)
+   {
+      genNumString << "Rectifier";
+      functionName = "Rectifier";
+   }
+   genNumString << "/" << "Gen_" << genNum;
    //genNumString.str();
-   fileString += "Gen_" + genNumString.str() + qualifier + ".txt";
+   //cout << genNumString.str() << endl;
+   fileString += "164Neuron10k" + genNumString.str() + qualifier + ".txt";
    
    ofstream fout; 
    // name of directory forward slash name of  file
+   //cout << fileString.c_str() << endl;
    fout.open(fileString.c_str());
    int i, j, size;
    size = populus.pop.size();
    NeuralNet network;
    fout << "size" << endl << size << endl;
+   fout << "ActFunc" << endl << functionName << endl;
+   int depthLim = populus.getOrganism(0,0).getDepth();
+   fout << "Depth" << endl << depthLim << endl;
    for(i = 0; i < size; i++)
    {
       for(j = 0;  j < size; j++)
@@ -757,6 +803,8 @@ Population Population::loadPopulation(string fileName)
    double weight;
    Population newPop;
    Organism placeholder;
+   ActFunc currentFunction = Threshold;
+   int depth = 0;
    vector<vector<Organism> > organismVecs;
    vector<Organism> tempOrganisms;
    vector<vector<vector<double> > > netWeights;
@@ -764,15 +812,43 @@ Population Population::loadPopulation(string fileName)
    vector<double> tempNeuron;
    if(input.is_open())
    {
-      getline(input, token);
-      if(token == "size")
-      {
-         getline(input, token);
-         //cout << "Token is: " << token << endl;
-         size = atof(token.c_str());
-      }
       while(getline(input, token))
       {
+         if(token == "size")
+         {
+            getline(input, token);
+            //cout << "Token is: " << token << endl;
+            size = atof(token.c_str());
+         }
+         if(token == "ActFunc")
+         {
+            getline(input, token);
+            if(token == "Sigmoid")
+            {
+               currentFunction = Sigmoid;
+            }
+            else if (token == "Rectifier")
+            {
+               currentFunction = Rectifier;
+            }
+            else if(token == "Softsign")
+            {
+               currentFunction = Softsign;
+            }
+            else if(token == "Softplus")
+            {
+               currentFunction = Softplus;
+            }
+            else if (token == "Threshold")
+            {
+               currentFunction = Threshold;
+            }
+         }
+         if(token == "Depth")
+         {
+            getline(input, token);
+            depth = atof(token.c_str());
+         }
          if(token == "newNeuron")
          {
             tempNeuron.clear();
@@ -803,7 +879,8 @@ Population Population::loadPopulation(string fileName)
          else if(token == "endOfOrganism")
          {
             netWeights.push_back(tempLayer);
-            placeholder = Organism(netWeights);
+            //cout << currentFunction << endl;
+            placeholder = Organism(netWeights, currentFunction, depth);
             tempOrganisms.push_back(placeholder);
             netWeights.clear();
             tempLayer.clear();
@@ -1088,9 +1165,9 @@ string Population::popVSpop(Population teamB)
       totalLossesB += lossesAsBlackB[orderA[i]] + lossesAsWhiteB[orderA[i]];
    }
    returnstring << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
-   returnstring << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl;
+   returnstring << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl << endl;
    cout << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
-   cout << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl;
+   cout << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl << endl;
    return returnstring.str();
 }
 
