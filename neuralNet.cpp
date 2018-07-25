@@ -96,44 +96,7 @@ int randomInt(int n)
    return r / (INT_MAX / n);
 }
 
-/*
-int main()
-{
-   srandom(time(0)); // seed the random number generator.
-   vector<unsigned int> layerSizesTest;
-   //layerSizesTest.push_back(4);
-   layerSizesTest.push_back(3);
-   layerSizesTest.push_back(2);
-   layerSizesTest.push_back(1);
-   //NeuralNet *network;
-   //network = new NeuralNet(layerSizesTest);
-
-   NeuralNet mother = NeuralNet(layerSizesTest);
-   NeuralNet father = NeuralNet(layerSizesTest);
-   
-   
-   vector<vector<vector<double> > > testWeights;
-   testWeights = mother.getWeights();
-   cout << "Mother: " << endl;
-   mother.printWeights();
-   testWeights = father.getWeights();
-   cout << "father: " << endl;
-   father.printWeights();
-   NeuralNet child = father.crossover(mother, layerSizesTest);
-   cout << "child: " << endl;
-   child.printWeights();
-   //vector<double> input;
-   //input.push_back(1);
-   //input.push_back(1);
-   //input.push_back(2);
-   //input.push_back(3);
-   //input.push_back(-1);
-   //cout << child.calculateNet(input) << endl;
-   
-   return 0;
-}*/
-
-double NeuralNet::calculateNet(vector<double> input)
+double NeuralNet::calculateNet(vector<double> input, ActFunc currentFunc)
 {
    vector<vector<vector<double> > > currentWeights = this->getWeights();
    double summation;
@@ -166,7 +129,7 @@ double NeuralNet::calculateNet(vector<double> input)
          if(i != currentWeights.size() - 2)
          {
             //cout << "not last layer" << endl;
-            summation = activation(summation);
+            summation = activation(summation, currentFunc);
             //cout << "Output = " << summation << endl;
          }
          nextInputs.push_back(summation);
@@ -244,32 +207,7 @@ void NeuralNet::printWeights()
       cout << endl;
    }
 } 
-/*
-void NeuralNet::prettyPrintWeights()
-{
-   vector<vector<vector<double> > > testWeights;
-   testWeights = this->getWeights();
-   cout.precision(17);
-   unsigned int i, j, k;
-   
-   for(i = 0; i < testWeights.size(); i++)
-   {
-      for(j = 0; j < testWeights.at(i).size(); j++)
-      {
-         for (k = 0; k < testWeights.at(i).at(j).size(); k++)
-         {
-            if(k % 8 ==0)
-            {
-               cout << endl;
-            }
-            cout << fixed << testWeights.at(i).at(j).at(k) << " , ";
-         }
-         cout << endl;
-      }
-      cout << endl;
-   }
-}
-*/
+
 void NeuralNet::saveWeights(ofstream &fout)
 {
    vector<vector<vector<double> > > givenWeights;
@@ -298,12 +236,24 @@ void NeuralNet::saveWeights(ofstream &fout)
    fout << "endOfOrganism" << endl;
 }
 
-double NeuralNet::activation(double x)
+double NeuralNet::activation(double x, ActFunc currentFunc)
 {
-   return rectifier(x); 
+   switch (currentFunc) 
+   {
+      case Sigmoid: return sigmoid(x); break;
+      case Rectifier: return rectifier(x); break;
+      case Softsign: return softsign(x); break;
+      case Softplus: return softplus(x); break;
+      case Threshold: return threshold(x); break;
+   }
 } 
-  
+
 double NeuralNet::mutation(double gene)
+{
+   randomMutation(gene);
+}
+
+double NeuralNet::randomMutation(double gene)
 {
    if(randomInt(100) == 1)
    {
@@ -312,13 +262,25 @@ double NeuralNet::mutation(double gene)
    }
    return gene;
 }
+
+double NeuralNet::normalMutation(double gene)
+{
+   int adjust;
+   default_random_engine generator(time(0));
+   normal_distribution<double> distribution(0.0, 0.5);
+   adjust = distribution(generator);
+   return gene + adjust;
+}
+
 //new
 double NeuralNet::softplus(double x)
 {
+   //cout << "using softplus" << endl;
    return log(1 + exp(x));
 }
 double NeuralNet::rectifier(double x)
 {
+   //cout << "using rectifier" << endl;
    if(x < 0)
    {
       return 0;
@@ -328,11 +290,13 @@ double NeuralNet::rectifier(double x)
 
 double NeuralNet::softsign(double x)
 {
+   //cout << "using softsign" << endl;
    return x / (1 + abs(x));
 }
 
 double NeuralNet::threshold(double x)
 {
+   //cout << "Using threshold" << endl;
    if (0 > x)
    {
       return 0;
@@ -342,6 +306,7 @@ double NeuralNet::threshold(double x)
       
 double NeuralNet::sigmoid(double x)
 {
+   //cout << "Using sigmoid" << endl;
    double eToTheX = exp(x);
    return (eToTheX / (eToTheX + 1));
 }
