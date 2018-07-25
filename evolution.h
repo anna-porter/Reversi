@@ -13,18 +13,23 @@
 #include "neuralNet.h"
 
 using namespace std;
-
 class Organism
 {
    private:
       NeuralNet brain;
       int fitness;
       vector<unsigned int> layerSizes;
+      ActFunc myFunc;
+      int depthLimit;
    public: 
-      Organism(vector<unsigned int>);
+      Organism(vector<unsigned int>, ActFunc, int);
       Organism();
-      Organism(vector<vector<vector<double> > >);
+      Organism(vector<vector<vector<double> > >, ActFunc, int);
       double getFitness() const {return fitness;}
+      int getDepth() const {return depthLimit;}
+      void setDepth(int newDepth) {depthLimit = newDepth;}
+      ActFunc getActFunc() const{return myFunc;}
+      void setActFunc(ActFunc newFunc) {myFunc = newFunc;}
       void updateFitness(int nextFitness) {fitness += nextFitness;}
       void setFitness(int newFitness) {fitness = newFitness;}
       vector<unsigned int> getLayerSizes() const{return layerSizes;}
@@ -38,14 +43,14 @@ class Population
       //int popSize;
       unsigned int numOfGenerations;
    public:
-      Population(vector<unsigned int>, int);
+      Population(vector<unsigned int>, int, ActFunc, int);
       Population();
       Population(vector<vector<Organism> >);
       vector<vector<Organism> > getPop() const{return pop;}
       Organism getOrganism(int row, int col) const {return pop.at(row).at(col);}
       void setPop(vector<vector<Organism> > newPop) {pop = newPop;}
       vector<vector<int> > getAllFitnesses();
-      void playNeighbors();
+      void playNeighbors(); 
       pair<int, int> playGame(Organism, Organism);
       pair<int, int> playGamePrint(Organism, Organism);
       Population createNextGen();
