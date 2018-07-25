@@ -7,8 +7,10 @@
 #include <climits>
 #include <fstream>
 #include <cstdlib>
+#include <random>
 #include <cmath>
 #include <stdlib.h> 
+enum ActFunc {Sigmoid, Rectifier, Softsign, Softplus, Threshold};
 
 using namespace std;
 
@@ -27,12 +29,13 @@ class NeuralNet
       NeuralNet crossover(NeuralNet, vector<unsigned int>);
       void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
       void printWeights();
-      void prettyPrintWeights();
       void saveWeights(ofstream&);
-      double calculateNet(vector<double>);
+      double calculateNet(vector<double>, ActFunc);
       NeuralNet& operator=(const NeuralNet &rhs);
       double mutation(double);
-      double activation(double);
+      double randomMutation(double);
+      double normalMutation(double);
+      double activation(double, ActFunc);
       double sigmoid(double);
       double softsign(double);
       double rectifier(double);
