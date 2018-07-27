@@ -2,6 +2,7 @@
 #include "neuralNet.h"
 #include "evolution.h"
 #include <sstream>
+#include <cfloat>
 int reversiAgentOneMove(Board, player, Organism);
 //int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org);
 Organism::Organism(vector<unsigned int> layerSizes, ActFunc myFunction, int depth)
@@ -182,7 +183,7 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
             finalScore = reversiBoard.getScore();
             //cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
             cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
-            reversiBoard.printBoard();
+            //reversiBoard.printBoard();
             fitnesses.second += size * size;
             emptyPieces = size * size - (finalScore.second + finalScore.first);
             fitnesses.second = fitnesses.second + emptyPieces + finalScore.second;
@@ -459,19 +460,24 @@ int miniMax(Board reversiBoard, int lastMove, int &bestMove, int depth, int move
 }*/
 int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
 {
-   vector<double> inputs;
+   vector< double> inputs;
    Board copyBoard;
    int bestMove;
    unsigned int i;
-   double maxHeuristic, heuristic;
-   maxHeuristic = -1000;
+    double maxHeuristic, heuristic;
+   maxHeuristic = -DBL_MAX;
    bestMove = -1;
    heuristic = 0;
    NeuralNet network = org.getNet();
    ActFunc currentFunction = org.getActFunc();
+   //vector<double> heuristicVals;
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    //cout << "num of avail moves : "  << availableMoves.size() << endl;
+   if(availableMoves.size() == 1)
+   {
+      return availableMoves[0];
+   }
    for(i = 0; i < availableMoves.size(); i++)
    {
       
@@ -482,11 +488,15 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
          copyBoard.makeMove(availableMoves.at(i), mover);
          inputs = copyBoard.boardToInput(mover);
          heuristic = network.calculateNet(inputs, currentFunction);
+         //heuristicVals.push_back(heuristic);
+         //cout << "Heuristic: " << heuristic << endl;
          if(heuristic > maxHeuristic)
          {
+            //cout << "new Max found" << endl;
             maxHeuristic = heuristic;
            
             bestMove = availableMoves.at(i);
+            //cout << "Best move = " << bestMove << endl;
          }
       }
    }
@@ -494,6 +504,13 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    {
       return bestMove;
    }
+   /*
+   cout << "available choices: " << availableMoves.size() << endl;
+   cout << "Heuristic values: " << endl;
+   for(i = 0; i < heuristicVals.size(); i++)
+   {
+      cout << heuristicVals[i] << endl;
+   }*/
    return bestMove; // return something else maybe?
 }
 
@@ -679,7 +696,7 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
       }
       if(i % 10 == 0)
       {
-         cout << "Generation " << i << endl;
+         //cout << "Generation " << i << endl;
       }
       currentGen.playNeighbors();
       nextGen = currentGen.createNextGen();
@@ -764,7 +781,7 @@ void Population::savePopulation(int genNum, int offset, string qualifier)
    genNumString << "/" << "Gen_" << genNum;
    //genNumString.str();
    //cout << genNumString.str() << endl;
-   fileString += "164Neuron10k" + genNumString.str() + qualifier + ".txt";
+   fileString += "8NnormShakeReplace" + genNumString.str() + qualifier + ".txt";
    
    ofstream fout; 
    // name of directory forward slash name of  file
@@ -932,7 +949,7 @@ string Population::popVSpop(Population teamB)
          tiesAsBlackA[rowA * sizeOfA + colA] = 0;
          piecesControlledA[rowA * sizeOfA + colA] = 0;
          stringstream strstr;
-         strstr << "Org: " << rowA << "," << colA;
+         strstr << rowA << "," << colA;
          agentStrA[rowA * sizeOfA + colA] = strstr.str();
          strstr.clear();
       }
@@ -949,7 +966,7 @@ string Population::popVSpop(Population teamB)
          tiesAsBlackB[rowB * sizeOfB + colB] = 0;
          piecesControlledB[rowB * sizeOfB + colB] = 0;
          stringstream strstr;
-         strstr << "Org: " << rowB << " , " << colB;
+         strstr << rowB << " , " << colB;
          agentStrB[rowB * sizeOfB + colB] = strstr.str();
          strstr.clear();
       }
@@ -1147,7 +1164,7 @@ string Population::popVSpop(Population teamB)
            << " " << setprecision(5) << setw(11) << right << ratio 
            << " " << setw(9) << right << fitnessB[orderB[i]] << "\n";
    }*/
-   
+   cout << endl;
    int totalWinsA, totalLossesA, totalWinsB, totalLossesB;
    totalWinsA = 0;
    totalLossesA = 0;
