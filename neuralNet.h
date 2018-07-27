@@ -30,11 +30,16 @@ class NeuralNet
       void setWeights(vector<vector<vector<double> > > newWeights){weights = newWeights;}
       void printWeights();
       void saveWeights(ofstream&);
-      double calculateNet(vector<double>, ActFunc);
+       double calculateNet(vector< double>, ActFunc);
       NeuralNet& operator=(const NeuralNet &rhs);
+      // Mutation types
       double mutation(double);
       double randomMutation(double);
-      double normalMutation(double);
+      double copySwap(double);
+      double normalShake(double);
+      double uniformShake(double);
+      double cauchyShake(double);
+      // Activation Functions
       double activation(double, ActFunc);
       double sigmoid(double);
       double softsign(double);
