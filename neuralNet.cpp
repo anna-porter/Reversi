@@ -1,10 +1,14 @@
 #include "reversi.h"
 #include "neuralNet.h" 
 #include "evolution.h"
+#include <time.h>
+#include <random>
+#include <cfloat>
 using namespace std;
 //f(x) = x / (1 + abs(x))
 int coinFlip();
 double randomDouble();
+default_random_engine generator(time(0));
 int randomInt(int n);
 //int reversiAgentOneMove(Board, player, NeuralNet&);
 NeuralNet& NeuralNet::operator=(const NeuralNet &rhs)
@@ -29,7 +33,6 @@ NeuralNet::NeuralNet()
 
 NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
 {
- 
    unsigned int i, destination, origin;
    vector<double> tempNeuron;
    vector<vector<double> > tempLayer;
@@ -47,7 +50,7 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
             // starting at 0 so we include the bias weights
             for(origin = 0; origin <= layerSizes.at(i); origin++)
             {
-               randomNum = randomDouble();
+               randomNum = normalShake(0);
                tempNeuron.push_back(randomNum);
             }
             tempLayer.push_back(tempNeuron);
@@ -64,7 +67,7 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
 double randomDouble()
 {
       int r = random();
-   double randDouble = static_cast<double>(r) / INT_MAX;
+   double randDouble = (static_cast<double>(r) / INT_MAX) * sqrt(3);
    int coin;
    coin = coinFlip();
    if(coin == 1)
@@ -87,60 +90,61 @@ int coinFlip()
 
 int randomInt(int n)
 {
-   int r;
-   do
+   if(n != 0)
    {
-      r = random();
+      int r;
+      do
+      {
+         r = random();
+      } while (r >= INT_MAX / n * n);
+      
+      return r / (INT_MAX / n);
    }
-   while (r >= INT_MAX / n * n);
-   return r / (INT_MAX / n);
+   return n;
 }
 
-double NeuralNet::calculateNet(vector<double> input, ActFunc currentFunc)
+ double NeuralNet::calculateNet(vector< double> input, ActFunc currentFunc)
 {
-   vector<vector<vector<double> > > currentWeights = this->getWeights();
-   double summation;
+   double summation, temp;
    summation = 0;
-   vector<double> lastInputs, nextInputs;
+   vector< double> lastInputs, nextInputs;
    unsigned int i, j, k;
    lastInputs = input;   
    // have to do minus one since we have a bias weight.;
-   if(input.size() != currentWeights.at(0).at(0).size() - 1)
+   if(input.size() != this->weights.at(0).at(0).size() - 1)
    {
       cerr << "CALCULATENET: INPUT NUMBER DOES NOT MATCH GIVEN NET" << endl;
       exit(1);
    }
-   for(i = 0; i < currentWeights.size() - 1; i++)
+   for(i = 0; i < this->weights.size() - 1; i += 1)
    {
-      for(j = 0; j < currentWeights.at(i).size(); j++)
+      for(j = 0; j < this->weights.at(i).size(); j += 1)
       {
-         for (k = 1; k < currentWeights.at(i).at(j).size(); k++)
+         for (k = 1; k < this->weights.at(i).at(j).size(); k += 1)
          {
+            //cout << i << j << k << endl;
             if(k - 1 >= 0)
             {
-               //cout << currentWeights.at(i).at(j).at(k) << " * " << lastInputs.at(k - 1) << " + " << endl;
-               summation += currentWeights.at(i).at(j).at(k) * lastInputs.at(k - 1);
+               temp = this->weights.at(i).at(j).at(k) * lastInputs.at(k - 1);
+               summation += temp;
             }
          }
-         //cout << currentWeights.at(i).at(j).at(0) << endl;
          // Add the bias.
-         summation += currentWeights.at(i).at(j).at(0);
-         // Use the sigmoid function.
-         if(i != currentWeights.size() - 2)
+         summation += this->weights.at(i).at(j).at(0);
+         // Use the activation function.
+         if(i != this->weights.size() - 2)
          {
-            //cout << "not last layer" << endl;
             summation = activation(summation, currentFunc);
-            //cout << "Output = " << summation << endl;
+            
          }
          nextInputs.push_back(summation);
          summation = 0;
       }
       lastInputs = nextInputs;
-      //cout << lastInputs.size() << endl;
       nextInputs.clear();
-   }  
-   //cout << "final output = " << lastInputs.at(0) << endl;
-   return lastInputs.at(0);
+   }
+   return lastInputs.at(0);   
+   
 }
 
 // Do cross over first and then go back through and mutate them
@@ -154,7 +158,6 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
    double gene;
    gene = 0;
    int coin;
-   // ya just. like. ya fathah.
    NeuralNet child = father;
    for(i = 0; i < motherWeights.size(); i++)
    {
@@ -180,7 +183,7 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
             gene = child.weights.at(i).at(j).at(k);
-            child.weights.at(i).at(j).at(k) = mutation(gene);
+            child.weights.at(i).at(j).at(k) = mutation(gene);  
          }
       }
    }
@@ -250,7 +253,9 @@ double NeuralNet::activation(double x, ActFunc currentFunc)
 
 double NeuralNet::mutation(double gene)
 {
-   randomMutation(gene);
+   gene = normalShake(gene);
+   return randomMutation(gene);
+   //return uniformShake(gene);
 }
 
 double NeuralNet::randomMutation(double gene)
@@ -259,25 +264,50 @@ double NeuralNet::randomMutation(double gene)
    {
       //cout << "I mutated" << endl;
       gene = randomDouble();
-   }
+   } 
    return gene;
 }
 
-double NeuralNet::normalMutation(double gene)
+double NeuralNet::normalShake(double gene)
 {
-   int adjust;
-   default_random_engine generator(time(0));
-   normal_distribution<double> distribution(0.0, 0.5);
+   double adjust;
+   normal_distribution<double> distribution(0.0, 1.0);
    adjust = distribution(generator);
    return gene + adjust;
 }
 
+double NeuralNet::uniformShake(double gene)
+{
+   double adjust = randomDouble();
+   return gene + adjust;
+}
+
+double NeuralNet::cauchyShake(double gene)
+{
+   cauchy_distribution<double> cDistribution(0.0,1.0);
+   double adjust = cDistribution(generator);
+   return gene + adjust;
+}
 //new
 double NeuralNet::softplus(double x)
 {
-   //cout << "using softplus" << endl;
-   return log(1 + exp(x));
+   double arg = 1 + exp(x);
+   if(x < log(DBL_MAX)) 
+   {
+      if(arg >=0)
+      {
+         x = log(arg);
+         return x;
+      }
+      else
+      {
+         cout << "Negative input to log inside softplus " << endl;
+      }
+   }
+   return x;
+   
 }
+
 double NeuralNet::rectifier(double x)
 {
    //cout << "using rectifier" << endl;
@@ -291,7 +321,21 @@ double NeuralNet::rectifier(double x)
 double NeuralNet::softsign(double x)
 {
    //cout << "using softsign" << endl;
-   return x / (1 + abs(x));
+    double denom;
+   denom = 1 + abs(x);
+   if(denom != 0)
+   {
+      return x / denom;
+   }
+   else 
+   {
+      cout << "divide by zero in softsign" << endl;
+   }
+   /*if(denom < 0.1)
+   {
+      cout << "Small Denominator: " << denom << endl;
+   }*/
+   return x;
 }
 
 double NeuralNet::threshold(double x)
@@ -307,6 +351,15 @@ double NeuralNet::threshold(double x)
 double NeuralNet::sigmoid(double x)
 {
    //cout << "Using sigmoid" << endl;
-   double eToTheX = exp(x);
-   return (eToTheX / (eToTheX + 1));
+   double eToTheX = exp(-x);
+   double denom = eToTheX + 1;
+   if(denom != 0)
+   {
+      return (eToTheX / denom);
+   }
+   else 
+   { 
+      cout << "Div by zero in sigmoid" << endl;
+   }
+   return x;
 }
