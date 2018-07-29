@@ -64,6 +64,15 @@ class Population
       void printPopulation();
       string popVSpop(Population);
       Population& operator=(const Population &rhs);
+            
 };
+pair<Organism, Organism> parentSelection(vector<Organism>, Organism);
+pair<Organism, Organism> mother6FitProb(vector<Organism>, Organism);
+pair<Organism, Organism> mother7FitProb(vector<Organism>, Organism);
+pair<Organism, Organism> both7FitProb(vector<Organism>, Organism);
+pair<Organism, Organism> bestMother6(vector<Organism>, Organism);
+pair<Organism, Organism> bestMother7(vector<Organism>, Organism);
+pair<Organism, Organism> bestBoth7(vector<Organism>, Organism);
+
 int reversiAgentOneMove(Board, player, Organism);
 #endif
