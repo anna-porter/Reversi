@@ -57,6 +57,8 @@ Population::Population()
 
 void Population::playNeighbors()
 {
+   int games;
+   games = 0;
    int i, j, rowInc, colInc, row, column;
    int size;
    size = this->pop.size();
@@ -73,6 +75,7 @@ void Population::playNeighbors()
             {
                if(rowInc != colInc)
                {
+                  games++;
                   row = (i + size + rowInc) % size;
                   column = (j + size + colInc) % size;
                   pop.at(i).at(j);
@@ -88,6 +91,7 @@ void Population::playNeighbors()
          //cout << endl << endl;
       }
    }
+   //cout << "Games played: " << games << endl;
 }
 
 pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
@@ -115,6 +119,8 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
          if(!reversiBoard.isValidMove(playerBlack_move, Black))
          {
             cout << playerBlack_move << " : " << "Black made an invalid move" << endl;
+            cerr << "Black made an invalid move" << endl;
+            exit(1);
             finalScore = reversiBoard.getScore();
             // First Organism gets 64 points for winning,
             fitnesses.first += size * size;
@@ -183,6 +189,8 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
             finalScore = reversiBoard.getScore();
             //cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
             cout << playerWhite_move << " : "<<"White made an invalid move" << endl;
+            cerr << "White made an invalid move" << endl;
+            exit(0);
             //reversiBoard.printBoard();
             fitnesses.second += size * size;
             emptyPieces = size * size - (finalScore.second + finalScore.first);
@@ -474,10 +482,10 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    //cout << "num of avail moves : "  << availableMoves.size() << endl;
-   if(availableMoves.size() == 1)
+   /*if(availableMoves.size() == 1)
    {
       return availableMoves[0];
-   }
+   }*/
    for(i = 0; i < availableMoves.size(); i++)
    {
       
@@ -504,25 +512,16 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    {
       return bestMove;
    }
-   /*
-   cout << "available choices: " << availableMoves.size() << endl;
-   cout << "Heuristic values: " << endl;
-   for(i = 0; i < heuristicVals.size(); i++)
-   {
-      cout << heuristicVals[i] << endl;
-   }*/
    return bestMove; // return something else maybe?
 }
 
 Population Population::createNextGen()
 {
+   int parentsFound = 0;
    int i, j, rowInc, colInc, row, column;
-   unsigned int k;
    int size;
-   int currentFit, lowestFit;
    srandom(time(0));
-   lowestFit = 999999;
-   NeuralNet mother, father, child;
+   NeuralNet child, mom, dad;
    size = this->pop.size();
    Population oldGen = *this;
    vector<unsigned int> layers = oldGen.pop.at(0).at(0).getLayerSizes();
@@ -531,15 +530,18 @@ Population Population::createNextGen()
    Population nextGen(layers, size, function, depth);
    Organism parentOrg(layers, function, depth);
    vector<Organism> parentCandidates;
+   Organism father;
+   pair<Organism, Organism> chosenParents;
+   //vector<int> parentRow;
+   //vector<int> parentColumn;
    vector<int> fitnessProb;
-   int randomNum, total;
-   total = 0;
-   vector<int> parentRow;
-   vector<int> parentColumn;
+   //cout << "finding candidates" << endl;
    for(i = 0; i < size; i++)
    {
       for(j = 0; j < size; j++)
       {
+         // center organism
+         father = oldGen.pop.at(i).at(j);
          for(rowInc = -1; rowInc <= 1; rowInc++)
          {
             for(colInc = -1; colInc <= 1; colInc++)
@@ -549,82 +551,278 @@ Population Population::createNextGen()
                   
                   row = (i + size + rowInc) % size;
                   column = (j + size + colInc) % size;
-                  currentFit = oldGen.pop.at(row).at(column).getFitness();
-                  //cout << currentFit << " , ";
-                  if(currentFit < lowestFit)
-                  {
-                     lowestFit = currentFit;
-                  }
+                  //cout << "candidate found" << endl;
                   parentCandidates.push_back(oldGen.pop.at(row).at(column));
-                  parentRow.push_back(row);
-                  parentColumn.push_back(column);
                }
             }
          }
-         //cout << endl;
-         //cout << "lowestFit is " << lowestFit << endl;
-         
-         for(rowInc = -1; rowInc <= 1; rowInc++)
-         {
-            for(colInc = -1; colInc <= 1; colInc++)
-            {
-               if(rowInc != colInc)
-               { 
-                  row = (i + size + rowInc) % size;
-                  column = (j + size + colInc) % size;
-                  currentFit = oldGen.pop.at(row).at(column).getFitness();
-                  //cout << currentFit << " - " << lowestFit << " = " << currentFit - lowestFit << endl;
-                  fitnessProb.push_back(currentFit - lowestFit);
-                  total += currentFit - lowestFit;
-               }
-            }
-         }
-         // testing'
-         //cout << endl << endl;
-         //cout << "fitness Probabilities: " << endl;
-         //for(k = 0; k < fitnessProb.size(); k++)
-         //{
-            //cout << fitnessProb.at(k) << endl;
-         //}
-         // end testing
-         // for each of the six neighbors
-         int condition;
-         condition = 0;
-         bool parentFound = false;
-         //cout << "total: " << total << endl;
-         randomNum = randomInt(total - 1);
-         //cout << "RandomNum : " << randomNum << endl;
-         //cout << "conditions: " << endl;
-         for(k = 0; k < fitnessProb.size(); k++)
-         {
-            condition += fitnessProb.at(k);
-            //cout << condition << endl;
-            if(randomNum <= condition && !parentFound)
-            {
-               parentFound = true;
-               //cout << "Organism " <<i << j<< "picked parent " << k << " at " << parentRow.at(k) << parentColumn.at(k)  << endl;
-               //cout << k << endl;
-               parentOrg = parentCandidates.at(k);
-            }
-         }
-         total = 0;
-         lowestFit = 99999;
-         fitnessProb.clear();
-         parentRow.clear();
-         parentColumn.clear();
-         parentCandidates.clear();
-         //cout << i << " : " << j << endl;
-         mother = oldGen.pop.at(i).at(j).getNet();
-         father = parentOrg.getNet();
-         child = father.crossover(mother, layers);
+         //cout << "Calling parentSel" << endl;
+         parentsFound++;
+         chosenParents = parentSelection(parentCandidates, father);
+         //cout << "mom and dad init" << endl;
+         mom = chosenParents.first.getNet();
+         dad = chosenParents.second.getNet();
+         //cout << "calling crossover" << endl;
+         child = mom.crossover(dad, layers);
+         //cout << "assigning new pop" << endl;
          nextGen.pop.at(i).at(j).setNet(child);
          nextGen.pop.at(i).at(j).setActFunc(function);
          nextGen.pop.at(i).at(j).setDepth(depth);
+         parentCandidates.clear();
       }
    }
+   //cout << "Parents found: " << parentsFound << endl;
    return nextGen;
 }
+pair<Organism, Organism> parentSelection(vector<Organism> parentCandidates, Organism father)
+{
+   return bestBoth7(parentCandidates, father);
+}
+pair<Organism, Organism> mother6FitProb(vector<Organism> parentCandidates, Organism father)
+{
+   unsigned int i;
+   int lowestFit, currentFit, total, condition, randomNum;
+   bool parentFound;
+   vector<int> fitnessProb;
+   pair<Organism, Organism> parents;
+   lowestFit = INT_MAX;
+   total = 0;
+   condition = 0;
+   parentFound = false;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      if(currentFit < lowestFit)
+      {
+         lowestFit = currentFit;
+      }
+   }
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      fitnessProb.push_back(currentFit - lowestFit);
+      total += currentFit - lowestFit;
+   }
+   randomNum = randomInt(total - 1);
+   //cout << "random " << randomNum << endl;
+   for(i = 0; i < fitnessProb.size() && !parentFound; i++)
+   {
+      condition += fitnessProb.at(i);
+      //cout << condition << endl;
+      if(randomNum <= condition)
+      {
+         parentFound = true;
+         cout << "chose parent " << i << endl;
+         //parents.first = parentCandidates.at(i);
+      }
+   }
+   parents.second = father;
+   return parents;
+}
 
+pair<Organism, Organism> mother7FitProb(vector<Organism> parentCandidates, Organism father)
+{
+   unsigned int i;
+   int lowestFit, currentFit, total, condition, randomNum;
+   bool parentFound;
+   vector<int> fitnessProb;
+   pair<Organism, Organism> parents;
+   lowestFit = INT_MAX;
+   total = 0;
+   condition = 0;
+   parentFound = false;
+   parentCandidates.push_back(father);
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      if(currentFit < lowestFit)
+      {
+         lowestFit = currentFit;
+      }
+   }
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      fitnessProb.push_back(currentFit - lowestFit);
+      total += currentFit - lowestFit;
+   }
+   randomNum = randomInt(total - 1);
+   //cout << "random " << randomNum << endl;
+   for(i = 0; i < fitnessProb.size() && !parentFound; i++)
+   {
+      condition += fitnessProb.at(i);
+      //cout << condition << endl;
+      if(randomNum <= condition)
+      {
+         parentFound = true;
+         //cout << "chose parent " << i << endl;
+         parents.first = parentCandidates.at(i);
+         parentCandidates.erase(parentCandidates.begin() + i);
+      }
+   }
+   parents.second = father;
+   return parents;
+}
+
+pair<Organism, Organism> both7FitProb(vector<Organism> parentCandidates, Organism father)
+{
+   unsigned int i;
+   int lowestFit, currentFit, total, condition, randomNum;
+   bool parentFound;
+   vector<int> fitnessProb;
+   pair<Organism, Organism> parents;
+   lowestFit = INT_MAX;
+   total = 0;
+   condition = 0;
+   parentFound = false;
+   parentCandidates.push_back(father);
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      if(currentFit < lowestFit)
+      {
+         lowestFit = currentFit;
+      }
+   }
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      fitnessProb.push_back(currentFit - lowestFit);
+      total += currentFit - lowestFit;
+   }
+   randomNum = randomInt(total - 1);
+   cout << "random " << randomNum << endl;
+   for(i = 0; i < fitnessProb.size() && !parentFound; i++)
+   {
+      condition += fitnessProb.at(i);
+      cout << condition << endl;
+      if(randomNum <= condition)
+      {
+         parentFound = true;
+         cout << "chose parent " << i << endl;
+         parents.first = parentCandidates.at(i);
+         parentCandidates.erase(parentCandidates.begin() + i);
+      }
+   }
+   parentFound = false;
+   fitnessProb.clear();
+   lowestFit = INT_MAX;
+   condition = 0;
+   total = 0;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      if(currentFit < lowestFit)
+      {
+         lowestFit = currentFit;
+      }
+   }
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      fitnessProb.push_back(currentFit - lowestFit);
+      total += currentFit - lowestFit;
+   }
+   randomNum = randomInt(total - 1);
+   cout << "random " << randomNum << endl;
+   for(i = 0; i < fitnessProb.size() && !parentFound; i++)
+   {
+      condition += fitnessProb.at(i);
+      cout << condition << endl;
+      if(randomNum <= condition)
+      {
+         parentFound = true;
+         cout << "chose parent " << i << endl;
+         parents.second = parentCandidates.at(i);
+         //parentCandidates.erase(parentCandidates.begin() + i);
+      }
+   }
+   return parents;
+
+}
+
+pair<Organism, Organism> bestMother6(vector<Organism> parentCandidates, Organism father)
+{
+   unsigned int i;
+   int highestFit, currentFit, highestIndex;
+   pair<Organism, Organism> parents;
+   highestFit = -INT_MAX;
+   highestIndex = -1;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      //cout << currentFit << endl;
+      if(currentFit > highestFit)
+      {
+         highestFit = currentFit;
+         highestIndex = i;
+      }
+   }
+   //cout << "highest " << highestFit << " at " << highestIndex << endl;
+   parents.first = parentCandidates.at(highestIndex);
+   parents.second = father;
+   return parents;
+}
+
+pair<Organism, Organism> bestMother7(vector<Organism> parentCandidates, Organism father)
+{
+   parentCandidates.push_back(father);
+   unsigned int i;
+   int highestFit, currentFit, highestIndex;
+   pair<Organism, Organism> parents;
+   highestFit = -INT_MAX;
+   highestIndex = -1;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      if(currentFit > highestFit)
+      {
+         highestFit = currentFit;
+         highestIndex = i;
+      }
+   }
+   parents.first = parentCandidates.at(highestIndex);
+   parents.second = father;
+   return parents;
+}
+pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism father)
+{
+   parentCandidates.push_back(father);
+   unsigned int i;
+   int highestFit, currentFit, highestIndex;
+   pair<Organism, Organism> parents;
+   highestFit = -INT_MAX;
+   highestIndex = -1;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      cout << currentFit << endl;
+      if(currentFit > highestFit)
+      {
+         highestFit = currentFit;
+         highestIndex = i;
+      }
+   }
+   parents.first = parentCandidates.at(highestIndex);
+   cout << "highest " << highestFit << " at " << highestIndex << endl;
+   parentCandidates.erase(parentCandidates.begin() + highestIndex);
+   highestFit = -INT_MAX;
+   highestIndex = -1;
+   for(i = 0; i < parentCandidates.size(); i++)
+   {
+      currentFit = parentCandidates.at(i).getFitness();
+      cout << currentFit << endl;
+      if(currentFit > highestFit)
+      {
+         highestFit = currentFit;
+         highestIndex = i;
+      }
+   }
+   parents.second = parentCandidates.at(highestIndex);
+   cout << "highest " << highestFit << " at " << highestIndex << endl;
+   return parents;
+}
+      
 void Population::assignFitnesses()
 {
    int i, j;
@@ -781,7 +979,7 @@ void Population::savePopulation(int genNum, int offset, string qualifier)
    genNumString << "/" << "Gen_" << genNum;
    //genNumString.str();
    //cout << genNumString.str() << endl;
-   fileString += "8NnormShakeReplace" + genNumString.str() + qualifier + ".txt";
+   fileString += "bestBoth7" + genNumString.str() + qualifier + ".txt";
    
    ofstream fout; 
    // name of directory forward slash name of  file
@@ -1181,10 +1379,10 @@ string Population::popVSpop(Population teamB)
       totalWinsB += winsAsBlackB[orderA[i]] + winsAsWhiteB[orderA[i]];
       totalLossesB += lossesAsBlackB[orderA[i]] + lossesAsWhiteB[orderA[i]];
    }
-   returnstring << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
-   returnstring << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl << endl;
-   cout << endl << "Team A Total Wins: " << totalWinsA << endl << "Team A Total Losses: " << totalLossesA << endl;
-   cout << "Team B Total Wins: " << totalWinsB << endl << "Team B Total Losses: " << totalLossesB << endl << endl;
+   returnstring << endl << "Team A Total Wins: " << totalWinsA << endl;// << "Team A Total Losses: " << totalLossesA << endl;
+   returnstring << "Team B Total Wins: " << totalWinsB << endl;// << "Team B Total Losses: " << totalLossesB << endl << endl;
+   cout << endl << "Team A Total Wins: " << totalWinsA << endl;// << "Team A Total Losses: " << totalLossesA << endl;
+   cout << "Team B Total Wins: " << totalWinsB << endl;// << "Team B Total Losses: " << totalLossesB << endl << endl;
    return returnstring.str();
 }
 
@@ -1204,99 +1402,4 @@ void Population::printFitnesses()
       cout << endl;
    }
 }
-/*
-int main()
-{
-   vector<unsigned int> layerSizes;
-   srandom(time(0));
-   */
-   // Testing for crossover on a population with small neuralnets
-   //vector<unsigned int> layerSizes;
-   /*
-   layerSizes.push_back(3);
-   layerSizes.push_back(2);
-   layerSizes.push_back(1);
-   Population populus = Population(layerSizes, 3);
-   populus.assignFitnesses();
-   Population newGeneration(layerSizes, 3);
-   newGeneration = populus.createNextGen();
-   cout << "Old population: " << endl;
-   populus.printPopulation();
-   cout << endl << endl << "New population: " << endl; 
-   newGeneration.printPopulation();*/
-   //populus.playNeighbors(); 
-   //cout << "after playing their neighbors" << endl;
-   //Population nextGeneration = Population(layerSizes, 4);
-   /*
-   int size, i, j;
-   size = populus.getSize();
-   //cout << "size: " << size << endl;
-   vector<vector<int> > fitnessVec;
-   fitnessVec = populus.getAllFitnesses();
-   cout << "after getting all fitnesses" << endl;
-   for(i = 0; i < size; i++)
-   {
-      for(j = 0; j < size; j++)
-      {
-         cout << fitnessVec.at(i).at(j) << " + ";
-      }
-      cout << endl;
-   }*/
 
-   // TESTING A BASIC LOAD SAVE POPULATION:
-   /*layerSizes.push_back(3);
-   layerSizes.push_back(2);
-   layerSizes.push_back(1);
-   int sizePop = 3; 
-   Population populus = Population(layerSizes, sizePop);
-   populus.savePopulation(1);
-   Population newPopulus;
-   newPopulus = newPopulus.loadPopulation();
-   cout << "old population: " << endl;
-   populus.printPopulation();
-   cout << endl << endl << "Loaded Population" << endl;
-   newPopulus.printPopulation();
-   */
-   // TESTING A BASIC POPULATION VS POPULATION
-   /*
-   layerSizes.push_back(64);
-   layerSizes.push_back(8);
-   layerSizes.push_back(1);
-   Population popA = Population(layerSizes, 3);
-   Population popB = Population(layerSizes, 4);
-   popA.popVSpop(popB);
-   */
-   
-   /*
-   cout << "fitnesses of A" << endl;
-   popA.printFitnesses();
-   cout << "fitnesses of B" << endl;
-   popB.printFitnesses();
-   popA.resetFitnesses();
-   popB.resetFitnesses();
-   popA.printFitnesses();
-   popB.printFitnesses();
-   */
-   //NEED TO CLEAR FITNESSES AFTER POPVSPOP;
-   //using argc and argv to take in a name of a file to load
-   
-   /*Organism black1gen = populus.getOrganism(4, 4);
-   Population pop10thGen = populus.runGenerations(10, layerSizes, 10);
-   Organism white10gen = pop10thGen.getOrganism(4,4);
-   pair<int, int> scores,scores2;
-   scores = populus.playGamePrint(black1gen, white10gen);
-   //scores2 = pop10thGen.playGame(black1gen, white10gen); 
-   cout << "Black 1st gen: " << scores.first << endl;
-   cout << "White 10th gen: " << scores.second << endl; 
-   */
-   /*
-   Population pop20thGen = pop10thGen.runGenerations(10, layerSizes, 10);
-   Organism white20Gen = pop20thGen.getOrganism(4,4);
-   scores = populus.playGamePrint(black1gen, white20Gen);
-   cout << "Black 1st gen: " << scores.first << endl;
-   cout << "white 20th gen: " << scores.second << endl;
-   */
-   /*
-   return 0;
-   
-}*/
