@@ -1,5 +1,5 @@
 // CS Research, Summer 2
-// Reversi Game
+// Reversi Game 
 
 // Here's the main function that plays all agents against each other and
 // summarizes the results.
