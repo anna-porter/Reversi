@@ -3,6 +3,7 @@
 #include "evolution.h"
 #include <time.h>
 #include <random>
+#include <cmath>
 #include <cfloat>
 using namespace std;
 //f(x) = x / (1 + abs(x))
@@ -106,10 +107,13 @@ int randomInt(int n)
  double NeuralNet::calculateNet(vector< double> input, ActFunc currentFunc)
 {
    double summation, temp;
+   //vector<vector<vector<double> > > currentWeights = this->getWeights();
    summation = 0;
+   //int calcs = 0;
    vector< double> lastInputs, nextInputs;
    unsigned int i, j, k;
-   lastInputs = input;   
+   lastInputs = input;
+   //stringstream errorString;
    // have to do minus one since we have a bias weight.;
    if(input.size() != this->weights.at(0).at(0).size() - 1)
    {
@@ -126,22 +130,49 @@ int randomInt(int n)
             if(k - 1 >= 0)
             {
                temp = this->weights.at(i).at(j).at(k) * lastInputs.at(k - 1);
+               if(lastInputs.at(k-1) == 1)
+               {
+                  //errorString << this->weights.at(i).at(j).at(k) << "+";
+               }
+               else
+               {
+                  //errorString << this->weights.at(i).at(j).at(k) << "*" << lastInputs.at(k - 1) << " + ";
+               }
                summation += temp;
+               //calcs++;
             }
          }
          // Add the bias.
          summation += this->weights.at(i).at(j).at(0);
+         //errorString << this->weights.at(i).at(j).at(0) << "\n";
+         //calcs++;
          // Use the activation function.
          if(i != this->weights.size() - 2)
          {
+            //errorString << "Summation after act " << summation << "\n";
             summation = activation(summation, currentFunc);
+            //cout << "Summation after act = " << summation << endl;
             
          }
+         //cout << summation << endl;
          nextInputs.push_back(summation);
          summation = 0;
       }
       lastInputs = nextInputs;
       nextInputs.clear();
+   }
+   //cout << "Network calcs: " << calcs << endl;
+   if(isnan(lastInputs.at(0)))
+   {
+      //cout << errorString.str();
+      cerr << "NaN value inside CalcNet" << endl;
+      exit(4);
+   }
+   if(isinf(lastInputs.at(0)))
+   {
+      //cout << errorString.str();
+      cerr << "inf value inside calcNet" << endl;
+      exit(5);
    }
    return lastInputs.at(0);   
    
@@ -153,26 +184,27 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
    NeuralNet father = *this;
    vector<vector<vector<double> > > motherWeights = mother.getWeights();
    vector<vector<vector<double> > > fatherWeights = father.getWeights();
-
+   //int geneNum = 0;
    unsigned int i, j, k;
    double gene;
    gene = 0;
    int coin;
    NeuralNet child = father;
+   //cout << "first for" << endl;
    for(i = 0; i < motherWeights.size(); i++)
    {
       for(j = 0; j < motherWeights.at(i).size(); j++)
       {
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
+            //cout << i << j << k << endl;
             coin = coinFlip();
             if(coin == 0)
             {
-               //cout << "I got " << i << j << k << " from mom" << endl;
-               //cout << motherWeights.at(i).at(j).at(k) << endl;
                gene = motherWeights.at(i).at(j).at(k);
                child.weights.at(i).at(j).at(k) = gene;
             }
+            
          }
       }
    }
@@ -184,10 +216,11 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
          {
             gene = child.weights.at(i).at(j).at(k);
             child.weights.at(i).at(j).at(k) = mutation(gene);  
+            //geneNum++;
          }
       }
    }
-   
+   //cout << "Genes: " << geneNum << endl;
    return child;
 }
 
@@ -220,7 +253,7 @@ void NeuralNet::saveWeights(ofstream &fout)
    //cout << givenWeights.at(0).at(0).size() << endl;
    cout.precision(17);
    unsigned int i, j, k;
-   //int numweights = 0;
+   //int numWeights = 0;
    for(i = 0; i < givenWeights.size(); i++)
    {
       fout << "newLayer" << endl;
@@ -235,7 +268,7 @@ void NeuralNet::saveWeights(ofstream &fout)
          fout << endl;
       }
    }
-   //cout << "numWeights " <<  numWeights << endl;
+   //cout << "Weights saved: " <<  numWeights << endl;
    fout << "endOfOrganism" << endl;
 }
 
@@ -253,9 +286,9 @@ double NeuralNet::activation(double x, ActFunc currentFunc)
 
 double NeuralNet::mutation(double gene)
 {
-   gene = normalShake(gene);
-   return randomMutation(gene);
-   //return uniformShake(gene);
+   //gene = normalShake(gene);
+   //return randomMutation(gene);
+   return normalShake(gene);
 }
 
 double NeuralNet::randomMutation(double gene)
@@ -353,13 +386,22 @@ double NeuralNet::sigmoid(double x)
    //cout << "Using sigmoid" << endl;
    double eToTheX = exp(-x);
    double denom = eToTheX + 1;
+   double result;
    if(denom != 0)
    {
-      return (eToTheX / denom);
+      result = eToTheX / denom;
+      //cout << x << endl; 
+      if(isnan(x))
+      {
+         cout << "input = " << x << endl;
+      }
+      return result;
    }
    else 
    { 
       cout << "Div by zero in sigmoid" << endl;
+      exit(3);
    }
+   
    return x;
 }
