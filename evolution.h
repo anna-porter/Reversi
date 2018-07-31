@@ -73,6 +73,6 @@ pair<Organism, Organism> both7FitProb(vector<Organism>, Organism);
 pair<Organism, Organism> bestMother6(vector<Organism>, Organism);
 pair<Organism, Organism> bestMother7(vector<Organism>, Organism);
 pair<Organism, Organism> bestBoth7(vector<Organism>, Organism);
-
+ 
 int reversiAgentOneMove(Board, player, Organism);
 #endif
