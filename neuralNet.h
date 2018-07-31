@@ -1,7 +1,7 @@
 #ifndef NEURALNET_H  
 #define NEURALNET_H
 
-#include <iomanip>
+#include <iomanip> 
 #include <iostream>
 #include <vector>
 #include <climits>
