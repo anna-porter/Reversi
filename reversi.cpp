@@ -266,7 +266,7 @@ bool Board::isGameOver()
    locationTile = NULL;
    // Check to see if all locations have been filled
    for(i = 0; i < size * size; i++)
-   {
+   { 
       locationTile = &(BoardLayout[i]);
       if(locationTile->getOwner() == none)
       {
