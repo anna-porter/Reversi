@@ -45,7 +45,7 @@ public:
    bool isValidMove(int location, player mover);
    Tile getTile(int i) {return BoardLayout.at(i);}
    bool isGameOver(); 
-   void printBoard();// const;
+   void printBoard();// const; 
    int getSize() const {return size;}
    int getTileLocation(int row, int column) const;
    //int getWhiteTurn() const {return moveNum;}
@@ -63,7 +63,7 @@ public:
    vector<int> checkLowerRight(int, player);
    vector<int> checkLowerLeft(int, player);
    //vector<int> checkDirection(int, player, int, int);
-   vector<double> boardToInput(player mover);
+   vector< double> boardToInput(player mover);
    vector<Tile> getBoard() const{return BoardLayout;}
 
    Board& operator=(const Board &rhs);
