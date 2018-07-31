@@ -1,0 +1,64 @@
+Sigmoid vs Rectifier
+
+Team A Total Wins: 9559
+Team B Total Wins: 9733
+
+Sigmoid vs Softsign
+
+Team A Total Wins: 9700
+Team B Total Wins: 9545
+
+Sigmoid vs Threshold
+
+Team A Total Wins: 10541
+Team B Total Wins: 8720
+
+Sigmoid vs Softplus
+
+Team A Total Wins: 9431
+Team A Total Losses: 9816
+Team B Total Wins: 9816
+Team B Total Losses: 9431
+
+Rectifier vs Softsign
+
+Team A Total Wins: 9850
+Team A Total Losses: 9416
+Team B Total Wins: 9416
+Team B Total Losses: 9850
+
+Rectifier vs Threshold
+
+Team A Total Wins: 10849
+Team A Total Losses: 8445
+Team B Total Wins: 8445
+Team B Total Losses: 10849
+
+Rectifier vs Softplus
+
+Team A Total Wins: 9347
+Team A Total Losses: 9913
+Team B Total Wins: 9913
+Team B Total Losses: 9347
+
+Softsign vs Threshold
+
+Team A Total Wins: 10368
+Team A Total Losses: 8890
+Team B Total Wins: 8890
+Team B Total Losses: 10368
+
+Softsign vs Softplus
+
+Team A Total Wins: 9275
+Team A Total Losses: 9979
+Team B Total Wins: 9979
+Team B Total Losses: 9275
+
+Threshold vs Softplus
+
+Team A Total Wins: 8462
+Team A Total Losses: 10790
+Team B Total Wins: 10790
+Team B Total Losses: 8462
+
