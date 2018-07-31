@@ -4,7 +4,9 @@
 #include <sstream>
 #include <cfloat>
 int reversiAgentOneMove(Board, player, Organism);
-//int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org);
+int reversiAgentMiniMax(Board reversiBoard, player mover, Organism org);
+double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, int depth, int mover);
+
 Organism::Organism(vector<unsigned int> layerSizes, ActFunc myFunction, int depth)
 {
    brain = NeuralNet(layerSizes);
@@ -57,6 +59,7 @@ Population::Population()
 
 void Population::playNeighbors()
 {
+   //cout << "Playing Neighbors" << endl;
    int games;
    games = 0;
    int i, j, rowInc, colInc, row, column;
@@ -422,31 +425,39 @@ vector<vector<int> > Population::getAllFitnesses()
    return fitnessVec;
 }
 /*
-int reversiAgentMiniMaxNet(Board reversiBoard, player mover, Organism org)
+int reversiAgentMiniMax(Board reversiBoard, player mover, Organism org)
 {
    vector<double> inputs;
    Board copyBoard;
-   int bestMove, lastMove;
+   int bestMove, lastMove, depthLimit;
    unsigned int i;
    double maxHeuristic, heuristic;
    NeurelNet network = org.getNet();
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    lastMove = availableMoves.at(0);
-   for(i = 0; i < availableMoves.size())
+   depthLimit = org.getDepth();
+   if(availableMoves.size() == 1)
    {
-      
+      return availableMoves.at(0);
    }
+   bestMove = availableMoves.at(0);
    miniMax(reversiBoard, lastMove, bestMove, 0);
    return bestMove;
 }
-int miniMax(Board reversiBoard, int lastMove, int &bestMove, int depth, int mover)
+double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, int depth, int mover)
 {
    // Take the last move considered;
-   board.makeMove(lastMove, mover);
-   int depthLimit = 3;
-   int i;
+   Board copyBoard = reversiBoard;
+   copyBoard.makeMove(lastMove, mover);
+   unsigned int i, j;
+   int depthLimit;
    player enemy;
+   depthLimit = org.getDepth();
+   NeuralNet network = org.getNet();
+   ActFunc currentFunction = org.getActFunc();
+   vector<int> availableMoves;
+   vector<double> inputs = copyBoard.boardToInput(mover);
    if(mover == White)
    {
       enemy = Black;
@@ -455,17 +466,52 @@ int miniMax(Board reversiBoard, int lastMove, int &bestMove, int depth, int move
    {
       enemy = White;
    }
+   if(reversiBoard.isGameOver() || depth > depthLimit)
+   {
+      return network.calculateNet(inputs, currentAct);
+   }
+      
    // If we are maxing the depth is even
    if(depth % 2 == 0)
    {
-      if(!reversiBoard.isGameOver() || depth > depthLimit)
+      availableMoves = reversiBoard.getValidMoves(mover);
+      for(i = 0; i < availableMoves.size(); i++)
       {
-         return -1; // idk if this is right
+         lastMove = availableMoves.at(i);
+         if(copyBoard.isValidMove(lastMove))
+         {
+            if(miniMax(reversiBoard, lastMove, bestMove, depth + 1) == 1)
+            {
+               bestMove = last;
+               return 1;
+            }
+         }
       }
-      for(i
+      return -1;
    }
-   
-}*/
+   // minimizing
+   else
+   {
+      if(reversiBoard.isGameOver())
+      {
+         return -1;
+      }
+      availableMoves = reversiBoard.getValidMoves(enemy);
+      for(i = 0; i < availableMoves.size(); i++)
+      {
+         lastMove = availableMoves.at(i);
+         if(copyBoard.isValidMove(lastMove))
+         {
+            if(miniMax(reversiBoard, lastMove, bestMove, depth + 1) == -1)
+            {
+               return -1
+            }
+         }
+      }
+      return 1;
+   }
+}
+*/
 int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
 {
    vector< double> inputs;
@@ -482,10 +528,10 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    //cout << "num of avail moves : "  << availableMoves.size() << endl;
-   /*if(availableMoves.size() == 1)
+   if(availableMoves.size() == 1)
    {
       return availableMoves[0];
-   }*/
+   }
    for(i = 0; i < availableMoves.size(); i++)
    {
       
@@ -510,13 +556,21 @@ int reversiAgentOneMove(Board reversiBoard, player mover, Organism org)
    }
    if(bestMove != -1)
    {
+      
       return bestMove;
    }
+   cout << "no move found" << endl;
+   /*
+      for(i = 0; i < heuristicVals.size(); i++)
+      {
+         cout << heuristicVals.at(i) << endl;
+      }*/
    return bestMove; // return something else maybe?
 }
 
 Population Population::createNextGen()
 {
+   //cout << "creating next Gen" << endl;
    int parentsFound = 0;
    int i, j, rowInc, colInc, row, column;
    int size;
@@ -563,6 +617,10 @@ Population Population::createNextGen()
          mom = chosenParents.first.getNet();
          dad = chosenParents.second.getNet();
          //cout << "calling crossover" << endl;
+         //cout << "mom: " << endl;
+         //mom.printWeights();
+         //cout << "dad: " << endl;
+         //dad.printWeights();
          child = mom.crossover(dad, layers);
          //cout << "assigning new pop" << endl;
          nextGen.pop.at(i).at(j).setNet(child);
@@ -574,10 +632,12 @@ Population Population::createNextGen()
    //cout << "Parents found: " << parentsFound << endl;
    return nextGen;
 }
+
 pair<Organism, Organism> parentSelection(vector<Organism> parentCandidates, Organism father)
 {
-   return bestBoth7(parentCandidates, father);
+   return mother6FitProb(parentCandidates, father);
 }
+
 pair<Organism, Organism> mother6FitProb(vector<Organism> parentCandidates, Organism father)
 {
    unsigned int i;
@@ -612,8 +672,8 @@ pair<Organism, Organism> mother6FitProb(vector<Organism> parentCandidates, Organ
       if(randomNum <= condition)
       {
          parentFound = true;
-         cout << "chose parent " << i << endl;
-         //parents.first = parentCandidates.at(i);
+         //cout << "chose parent " << i << endl;
+         parents.first = parentCandidates.at(i);
       }
    }
    parents.second = father;
@@ -664,6 +724,8 @@ pair<Organism, Organism> mother7FitProb(vector<Organism> parentCandidates, Organ
    return parents;
 }
 
+// change to choosing from 7 but can be the same
+
 pair<Organism, Organism> both7FitProb(vector<Organism> parentCandidates, Organism father)
 {
    unsigned int i;
@@ -691,15 +753,15 @@ pair<Organism, Organism> both7FitProb(vector<Organism> parentCandidates, Organis
       total += currentFit - lowestFit;
    }
    randomNum = randomInt(total - 1);
-   cout << "random " << randomNum << endl;
+   //cout << "random " << randomNum << endl;
    for(i = 0; i < fitnessProb.size() && !parentFound; i++)
    {
       condition += fitnessProb.at(i);
-      cout << condition << endl;
+      //cout << condition << endl;
       if(randomNum <= condition)
       {
          parentFound = true;
-         cout << "chose parent " << i << endl;
+         //cout << "chose parent " << i << endl;
          parents.first = parentCandidates.at(i);
          parentCandidates.erase(parentCandidates.begin() + i);
       }
@@ -724,15 +786,15 @@ pair<Organism, Organism> both7FitProb(vector<Organism> parentCandidates, Organis
       total += currentFit - lowestFit;
    }
    randomNum = randomInt(total - 1);
-   cout << "random " << randomNum << endl;
+   //cout << "random " << randomNum << endl;
    for(i = 0; i < fitnessProb.size() && !parentFound; i++)
    {
       condition += fitnessProb.at(i);
-      cout << condition << endl;
+      //cout << condition << endl;
       if(randomNum <= condition)
       {
          parentFound = true;
-         cout << "chose parent " << i << endl;
+         //cout << "chose parent " << i << endl;
          parents.second = parentCandidates.at(i);
          //parentCandidates.erase(parentCandidates.begin() + i);
       }
@@ -785,6 +847,7 @@ pair<Organism, Organism> bestMother7(vector<Organism> parentCandidates, Organism
    parents.second = father;
    return parents;
 }
+
 pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism father)
 {
    parentCandidates.push_back(father);
@@ -796,7 +859,7 @@ pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism f
    for(i = 0; i < parentCandidates.size(); i++)
    {
       currentFit = parentCandidates.at(i).getFitness();
-      cout << currentFit << endl;
+      //cout << currentFit << endl;
       if(currentFit > highestFit)
       {
          highestFit = currentFit;
@@ -804,7 +867,7 @@ pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism f
       }
    }
    parents.first = parentCandidates.at(highestIndex);
-   cout << "highest " << highestFit << " at " << highestIndex << endl;
+   //cout << "highest " << highestFit << " at " << highestIndex << endl;
    parentCandidates.erase(parentCandidates.begin() + highestIndex);
    highestFit = -INT_MAX;
    highestIndex = -1;
@@ -819,7 +882,7 @@ pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism f
       }
    }
    parents.second = parentCandidates.at(highestIndex);
-   cout << "highest " << highestFit << " at " << highestIndex << endl;
+   //cout << "highest " << highestFit << " at " << highestIndex << endl;
    return parents;
 }
       
@@ -892,7 +955,7 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
       {
          currentGen.savePopulation(i, offset, qualifier);
       }
-      if(i % 10 == 0)
+      //if(i % 10 == 0)
       {
          //cout << "Generation " << i << endl;
       }
@@ -979,7 +1042,7 @@ void Population::savePopulation(int genNum, int offset, string qualifier)
    genNumString << "/" << "Gen_" << genNum;
    //genNumString.str();
    //cout << genNumString.str() << endl;
-   fileString += "bestBoth7" + genNumString.str() + qualifier + ".txt";
+   fileString += "8Nactivation" + genNumString.str() + qualifier + ".txt";
    
    ofstream fout; 
    // name of directory forward slash name of  file
@@ -1403,3 +1466,4 @@ void Population::printFitnesses()
    }
 }
 
+// maybe run cauchy shake with smaller deviations
