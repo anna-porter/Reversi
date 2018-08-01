@@ -5,8 +5,11 @@
 #include <cfloat>
 int reversiAgentOneMove(Board, player, Organism);
 int reversiAgentMiniMax(Board reversiBoard, player mover, Organism org);
-double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, int depth, int mover);
-
+double max(Board reversiBoard, Organism org, int lastMove, int depth, player mover);
+double min(Board reversiBoard, Organism org, int lastMove, int depth, player mover);
+vector<int> wins;
+vector<int> ties;
+//vector<int> losses;
 Organism::Organism(vector<unsigned int> layerSizes, ActFunc myFunction, int depth)
 {
    brain = NeuralNet(layerSizes);
@@ -116,7 +119,7 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
       // Otherwise, pass to black
       if(reversiBoard.getValidMoves(Black).size() != 0)
       {
-         int playerBlack_move = reversiAgentOneMove(reversiBoard, Black, blackPlayer);
+         int playerBlack_move = reversiAgentMiniMax(reversiBoard, Black, blackPlayer);
          
          //if it is an invalid move, B automatically wins
          if(!reversiBoard.isValidMove(playerBlack_move, Black))
@@ -185,7 +188,7 @@ pair<int, int> Population::playGame(Organism blackPlayer, Organism whitePlayer)
       }
       if(reversiBoard.getValidMoves(White).size() != 0)
       {
-         int playerWhite_move = reversiAgentOneMove(reversiBoard, White, whitePlayer);
+         int playerWhite_move = reversiAgentMiniMax(reversiBoard, White, whitePlayer);
          // if it is an invalid move, A automatically wins
          if(!reversiBoard.isValidMove(playerWhite_move, White))
          {
@@ -424,33 +427,204 @@ vector<vector<int> > Population::getAllFitnesses()
    }
    return fitnessVec;
 }
-/*
+
+   //Minimax
 int reversiAgentMiniMax(Board reversiBoard, player mover, Organism org)
 {
    vector<double> inputs;
    Board copyBoard;
-   int bestMove, lastMove, depthLimit;
+   int bestMove, lastMove;
    unsigned int i;
    double maxHeuristic, heuristic;
-   NeurelNet network = org.getNet();
+   NeuralNet network = org.getNet();
    vector<int> availableMoves;
    availableMoves = reversiBoard.getValidMoves(mover);
    lastMove = availableMoves.at(0);
-   depthLimit = org.getDepth();
+   maxHeuristic = -(DBL_MAX - 1);
+   bestMove = -1;
    if(availableMoves.size() == 1)
    {
       return availableMoves.at(0);
    }
-   bestMove = availableMoves.at(0);
-   miniMax(reversiBoard, lastMove, bestMove, 0);
+   //bestMove = availableMoves.at(0);
+   for(i = 0; i < availableMoves.size(); i++)
+   {
+      lastMove = availableMoves.at(i);
+      heuristic = max(reversiBoard, org, lastMove, 0, mover);
+      if(heuristic > maxHeuristic)
+      {
+         bestMove = availableMoves.at(i);
+         maxHeuristic = heuristic;
+      }
+   }
    return bestMove;
 }
-double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, int depth, int mover)
+double max(Board reversiBoard, Organism org, int lastMove, int depth, player mover)
+{
+   Board copyBoard;
+   unsigned int i;
+   int depthLimit;
+   int maxHeuristic, heuristic;
+   player enemy;
+   NeuralNet network;
+   ActFunc currentAct;
+   vector<int> availableMoves;
+   // Take the last move considered;
+   copyBoard = reversiBoard;
+   copyBoard.makeMove(lastMove, mover);
+   depthLimit = org.getDepth();
+   currentAct = org.getActFunc();
+   vector<double> inputs;
+   maxHeuristic = -(DBL_MAX - 1); // ASK DR LEGRAND ABOUT THIS: warning: overflow in implicit constant conversion
+   
+   if(mover == White)
+   {
+      enemy = Black;
+   }
+   else 
+   {
+      enemy = White;
+   }
+   if(copyBoard.isGameOver())
+   {
+      pair<int, int> score;
+      int fitness;
+      score = copyBoard.getScore();
+      fitness = 0;
+      if(mover == Black)
+      {
+         if(score.first > 32)
+         {
+            fitness += 64;
+         }
+         if(score.first == 32)
+         {
+            fitness += 32;
+         }
+         fitness += score.first;
+      }
+      else// if(mover == White)
+      {
+         if(score.second > 32)
+         {
+            fitness += 64;
+         }
+         if(score.second == 32)
+         {
+            fitness += 32;
+         }
+         fitness += score.second;
+      }
+      return fitness;
+   }
+   if(depth >= depthLimit)
+   {
+      inputs = copyBoard.boardToInput(mover);
+      return org.getNet().calculateNet(inputs, currentAct);
+   }
+   availableMoves = reversiBoard.getValidMoves(mover);
+      for(i = 0; i < availableMoves.size(); i++)
+      {
+         lastMove = availableMoves.at(i);
+         if(copyBoard.isValidMove(lastMove, mover))
+         {
+            // find how good the best move we've seen so far is.
+            heuristic = min(copyBoard, org, lastMove, depth + 1, enemy);
+            if(heuristic > maxHeuristic)
+            {
+               //bestMove = lastMove;
+               maxHeuristic = heuristic;
+            }
+         }
+      }
+      return maxHeuristic;
+}
+
+double min(Board reversiBoard, Organism org, int lastMove, int depth, player mover)
+{
+   Board copyBoard;
+   unsigned int i;
+   int depthLimit;
+   int minHeuristic, heuristic;
+   player enemy;
+   NeuralNet network;
+   ActFunc currentAct;
+   vector<int> availableMoves;
+   // Take the last move considered;
+   copyBoard = reversiBoard;
+   copyBoard.makeMove(lastMove, mover);
+   depthLimit = org.getDepth();
+   currentAct = org.getActFunc();
+   vector<double> inputs;
+   minHeuristic = DBL_MAX;
+   if(mover == White)
+   {
+      enemy = Black;
+   }
+   else 
+   {
+      enemy = White;
+   }
+   if(copyBoard.isGameOver())
+   {
+      pair<int, int> score;
+      int fitness;
+      score = copyBoard.getScore();
+      fitness = 0;
+      if(mover == Black)
+      {
+         if(score.first > 32)
+         {
+            fitness += 64;
+         }
+         if(score.first == 32)
+         {
+            fitness += 32;
+         }
+         fitness += score.first;
+      }
+      else// if(mover == White)
+      {
+         if(score.second > 32)
+         {
+            fitness += 64;
+         }
+         if(score.second == 32)
+         {
+            fitness += 32;
+         }
+         fitness += score.second;
+      }
+      return fitness;
+   }
+   if(depth >= depthLimit)
+   {
+      inputs = copyBoard.boardToInput(mover);
+      return org.getNet().calculateNet(inputs, currentAct);
+   }
+   availableMoves = reversiBoard.getValidMoves(mover);
+      for(i = 0; i < availableMoves.size(); i++)
+      {
+         lastMove = availableMoves.at(i);
+         if(copyBoard.isValidMove(lastMove, mover))
+         {
+            // find how good the best move we've seen so far is.
+            heuristic = max(copyBoard, org, lastMove, depth + 1, enemy);
+            if(heuristic < minHeuristic)
+            
+               minHeuristic = heuristic;
+            }
+         }
+      
+      return minHeuristic;
+}
+/*
+double miniMax(Board reversiBoard, Organism org, int lastMove, int depth, player mover)
 {
    // Take the last move considered;
    Board copyBoard = reversiBoard;
    copyBoard.makeMove(lastMove, mover);
-   unsigned int i, j;
+   unsigned int i;
    int depthLimit;
    player enemy;
    depthLimit = org.getDepth();
@@ -480,21 +654,23 @@ double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, in
          lastMove = availableMoves.at(i);
          if(copyBoard.isValidMove(lastMove))
          {
-            if(miniMax(reversiBoard, lastMove, bestMove, depth + 1) == 1)
+            // find how good the best move we've seen so far is.
+            
+            if(miniMax(reversiBoard, lastMove, bestMove, depth + 1) == DBL_MAX)
             {
                bestMove = last;
-               return 1;
+               return DBL_MAX;
             }
          }
       }
-      return -1;
+      return -DBL_MAX;
    }
    // minimizing
    else
    {
       if(reversiBoard.isGameOver())
       {
-         return -1;
+         return -DBL_MAX;
       }
       availableMoves = reversiBoard.getValidMoves(enemy);
       for(i = 0; i < availableMoves.size(); i++)
@@ -502,13 +678,13 @@ double miniMax(Board reversiBoard, Organism org, int lastMove, int &bestMove, in
          lastMove = availableMoves.at(i);
          if(copyBoard.isValidMove(lastMove))
          {
-            if(miniMax(reversiBoard, lastMove, bestMove, depth + 1) == -1)
+            if(miniMax(reversiBoard, org, lastMove, bestMove, depth + 1, ) == -DBL_MAX)
             {
-               return -1
+               return -DBL_MAX;
             }
          }
       }
-      return 1;
+      return DBL_MAX;
    }
 }
 */
@@ -874,7 +1050,7 @@ pair<Organism, Organism> bestBoth7(vector<Organism> parentCandidates, Organism f
    for(i = 0; i < parentCandidates.size(); i++)
    {
       currentFit = parentCandidates.at(i).getFitness();
-      cout << currentFit << endl;
+      //cout << currentFit << endl;
       if(currentFit > highestFit)
       {
          highestFit = currentFit;
@@ -955,9 +1131,9 @@ Population Population::runGenerations(int generations, vector<unsigned int> laye
       {
          currentGen.savePopulation(i, offset, qualifier);
       }
-      //if(i % 10 == 0)
+      if(i % 10 == 0)
       {
-         //cout << "Generation " << i << endl;
+         cout << "Generation " << i << endl;
       }
       currentGen.playNeighbors();
       nextGen = currentGen.createNextGen();
@@ -1042,7 +1218,7 @@ void Population::savePopulation(int genNum, int offset, string qualifier)
    genNumString << "/" << "Gen_" << genNum;
    //genNumString.str();
    //cout << genNumString.str() << endl;
-   fileString += "8Nactivation" + genNumString.str() + qualifier + ".txt";
+   fileString += "Minimax" + genNumString.str() + qualifier + ".txt";
    
    ofstream fout; 
    // name of directory forward slash name of  file
@@ -1426,29 +1602,51 @@ string Population::popVSpop(Population teamB)
            << " " << setw(9) << right << fitnessB[orderB[i]] << "\n";
    }*/
    cout << endl;
-   int totalWinsA, totalLossesA, totalWinsB, totalLossesB;
+   int totalWinsA, totalLossesA, totalWinsB, totalLossesB, totalTies;
    totalWinsA = 0;
    totalLossesA = 0;
    totalWinsB = 0;
    totalLossesB = 0;
+   totalTies = 0;
    stringstream returnstring;
    for(i = 0; i < sizeOfA * sizeOfA; i += 1)
    {
       totalWinsA += winsAsBlackA[orderA[i]] + winsAsWhiteA[orderA[i]];
       totalLossesA += lossesAsBlackA[orderA[i]] + lossesAsWhiteA[orderA[i]];
+      totalTies += tiesAsBlackA[orderA[i]] + tiesAsWhiteA[orderA[i]];
    }
    for(i = 0; i < sizeOfB * sizeOfB; i += 1)
    {
       totalWinsB += winsAsBlackB[orderA[i]] + winsAsWhiteB[orderA[i]];
       totalLossesB += lossesAsBlackB[orderA[i]] + lossesAsWhiteB[orderA[i]];
    }
+   wins.push_back(totalWinsB);
+   ties.push_back(totalTies);
    returnstring << endl << "Team A Total Wins: " << totalWinsA << endl;// << "Team A Total Losses: " << totalLossesA << endl;
    returnstring << "Team B Total Wins: " << totalWinsB << endl;// << "Team B Total Losses: " << totalLossesB << endl << endl;
+   returnstring << "Ties: " << totalTies << endl;
    cout << endl << "Team A Total Wins: " << totalWinsA << endl;// << "Team A Total Losses: " << totalLossesA << endl;
    cout << "Team B Total Wins: " << totalWinsB << endl;// << "Team B Total Losses: " << totalLossesB << endl << endl;
+   cout << "Ties: " << totalTies << endl;
    return returnstring.str();
 }
-
+/*
+string getWinsTies()
+{
+   stringstream winsTies;
+   winsTies << "wins" << endl;
+   int i;
+   for(i = 0; i < wins.size(); i++)
+   {
+      winsTies << wins.at(i) << endl;
+   }
+   winsTies << "ties" << endl;
+   for(i = 0; i < ties.size(); i++)
+   {
+      winsTies << ties.at(i) << endl;
+   }
+   return winsTies.str();
+}*/
 void Population::printFitnesses()
 {
    Population populus = *this;
