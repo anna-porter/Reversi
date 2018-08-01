@@ -38,7 +38,6 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
    vector<double> tempNeuron;
    vector<vector<double> > tempLayer;
    double randomNum;
-   //cout << "layerSIzes: " << layerSizes.size() << endl;
    // loops the same number of times as the number of layers we have. 
    for(i = 0; i < layerSizes.size(); i++)
    {
@@ -55,8 +54,6 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
                tempNeuron.push_back(randomNum);
             }
             tempLayer.push_back(tempNeuron);
-            //cout << i << " : " << tempLayer.size() << endl;
-            //cout << i << " : " << tempLayer.size() << endl;
             tempNeuron.clear();
          }
       }
@@ -67,7 +64,7 @@ NeuralNet::NeuralNet(vector<unsigned int> layerSizes)
 
 double randomDouble()
 {
-      int r = random();
+   int r = random();
    double randDouble = (static_cast<double>(r) / INT_MAX) * sqrt(3);
    int coin;
    coin = coinFlip();
@@ -183,26 +180,18 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
 {
    NeuralNet father = *this;
    vector<vector<vector<double> > > motherWeights = mother.getWeights();
-   vector<vector<vector<double> > > fatherWeights = father.getWeights();
-   //int geneNum = 0;
+   //vector<vector<vector<double> > > fatherWeights = father.getWeights();
    unsigned int i, j, k;
-   double gene;
-   gene = 0;
-   int coin;
    NeuralNet child = father;
-   //cout << "first for" << endl;
    for(i = 0; i < motherWeights.size(); i++)
    {
       for(j = 0; j < motherWeights.at(i).size(); j++)
       {
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
-            //cout << i << j << k << endl;
-            coin = coinFlip();
-            if(coin == 0)
+            if(coinFlip() == 0)
             {
-               gene = motherWeights.at(i).at(j).at(k);
-               child.weights.at(i).at(j).at(k) = gene;
+               child.weights.at(i).at(j).at(k) = motherWeights.at(i).at(j).at(k);
             }
             
          }
@@ -214,13 +203,10 @@ NeuralNet NeuralNet::crossover(NeuralNet mother, vector<unsigned int> parentShap
       {
          for (k = 0; k < motherWeights.at(i).at(j).size(); k++)
          {
-            gene = child.weights.at(i).at(j).at(k);
-            child.weights.at(i).at(j).at(k) = mutation(gene);  
-            //geneNum++;
+            child.weights.at(i).at(j).at(k) = mutation(child.weights.at(i).at(j).at(k));  
          }
       }
    }
-   //cout << "Genes: " << geneNum << endl;
    return child;
 }
 
