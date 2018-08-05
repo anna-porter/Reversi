@@ -6,7 +6,6 @@
 #include <cmath>
 #include <cfloat>
 using namespace std;
-//f(x) = x / (1 + abs(x))
 int coinFlip();
 double randomDouble();
 default_random_engine generator(time(0));
@@ -123,10 +122,15 @@ int randomInt(int n)
       {
          for (k = 1; k < this->weights.at(i).at(j).size(); k += 1)
          {
-            //cout << i << j << k << endl;
             if(k - 1 >= 0)
             {
                temp = this->weights.at(i).at(j).at(k) * lastInputs.at(k - 1);
+               if(isnan(temp) || isinf(temp))
+               {
+                  cout << "inf or nan temp" << endl;
+                  cerr << "inf or nan temp" << endl;
+                  cout << this->weights.at(i).at(j).at(k) << " * " << lastInputs.at(k - 1) << endl;
+               }
                if(lastInputs.at(k-1) == 1)
                {
                   //errorString << this->weights.at(i).at(j).at(k) << "+";
@@ -136,6 +140,11 @@ int randomInt(int n)
                   //errorString << this->weights.at(i).at(j).at(k) << "*" << lastInputs.at(k - 1) << " + ";
                }
                summation += temp;
+               if(isnan(summation) || isinf(summation))
+               {
+                  cout << "inf or nan summation" << endl;
+                  cout << temp << endl;
+               }
                //calcs++;
             }
          }
@@ -151,7 +160,11 @@ int randomInt(int n)
             //cout << "Summation after act = " << summation << endl;
             
          }
-         //cout << summation << endl;
+         if(isnan(summation))
+         {
+            cout << "nan summation being pushed back" << endl;
+            cout << "bias: " << this->weights.at(i).at(j).at(0) << endl;
+         }
          nextInputs.push_back(summation);
          summation = 0;
       }
@@ -370,16 +383,32 @@ double NeuralNet::threshold(double x)
 double NeuralNet::sigmoid(double x)
 {
    //cout << "Using sigmoid" << endl;
-   double eToTheX = exp(-x);
-   double denom = eToTheX + 1;
+   if(isnan(x))
+   {
+      cout << "nan before applying sigmoid" << endl;
+   }
+   if(x > 15)
+   {
+      return 1.0;
+   }
+   if(x <= -710)
+   {
+      return 0.0;
+   }
+   //double eToTheX = exp(-x);
+   double denom = 1 + exp(-x);
    double result;
    if(denom != 0)
    {
-      result = eToTheX / denom;
+      result = 1 / denom;
       //cout << x << endl; 
-      if(isnan(x))
+      if(isnan(result))
       {
-         cout << "input = " << x << endl;
+         cout << "Nan:  input = " << x << endl;
+      }
+      if(isinf(result))
+      {
+         cout << "Inf:  input = " << x << endl;
       }
       return result;
    }
@@ -388,6 +417,5 @@ double NeuralNet::sigmoid(double x)
       cout << "Div by zero in sigmoid" << endl;
       exit(3);
    }
-   
-   return x;
+   return 0;
 }
