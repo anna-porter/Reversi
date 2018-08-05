@@ -13,6 +13,7 @@
 #include "neuralNet.h"
 
 using namespace std;
+
 class Organism
 {
    private:
@@ -63,7 +64,9 @@ class Population
       void savePopulation(int, int, string);
       void printPopulation();
       string popVSpop(Population);
+      string popVSpopTeamA(Population);
       Population& operator=(const Population &rhs);
+      //string getWinsTies(); 
             
 };
 pair<Organism, Organism> parentSelection(vector<Organism>, Organism);
@@ -73,6 +76,7 @@ pair<Organism, Organism> both7FitProb(vector<Organism>, Organism);
 pair<Organism, Organism> bestMother6(vector<Organism>, Organism);
 pair<Organism, Organism> bestMother7(vector<Organism>, Organism);
 pair<Organism, Organism> bestBoth7(vector<Organism>, Organism);
- 
+int reversiAgentMiniMax(Board reversiBoard, player mover, Organism org);
+int reversiAgentAlphaBeta(Board reversiBoard, player mover, Organism org);
 int reversiAgentOneMove(Board, player, Organism);
 #endif
