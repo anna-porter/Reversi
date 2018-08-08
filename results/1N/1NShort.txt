@@ -1,0 +1,145 @@
+
+Gen 1 vs 1k 
+
+Team A Total Wins: 6630
+Team A Total Losses: 12819
+Team B Total Wins: 12819
+Team B Total Losses: 6630
+
+
+Gen 1 vs 2k
+
+Team A Total Wins: 6349
+Team A Total Losses: 13130
+Team B Total Wins: 13130
+Team B Total Losses: 6349
+
+
+Gen 1k vs 2k
+
+Team A Total Wins: 7794
+Team A Total Losses: 11653
+Team B Total Wins: 11653
+Team B Total Losses: 7794
+
+
+Gen 1 vs 3k
+
+Team A Total Wins: 6022
+Team A Total Losses: 13425
+Team B Total Wins: 13425
+Team B Total Losses: 6022
+
+
+Gen 2k vs 3k
+
+Team A Total Wins: 10441
+Team A Total Losses: 8914
+Team B Total Wins: 8914
+Team B Total Losses: 10441
+
+
+Gen 1 vs 4k
+
+Gen 3k vs 4k
+
+Team A Total Wins: 9033
+Team A Total Losses: 10386
+Team B Total Wins: 10386
+Team B Total Losses: 9033
+
+
+Gen 1 vs 5k
+
+Team A Total Wins: 5504
+Team A Total Losses: 13972
+Team B Total Wins: 13972
+Team B Total Losses: 5504
+
+
+Gen 4k vs 5k
+
+Team A Total Wins: 9079
+Team A Total Losses: 10295
+Team B Total Wins: 10295
+Team B Total Losses: 9079
+
+
+Gen 1 vs 6k
+
+Team A Total Wins: 5793
+Team A Total Losses: 13726
+Team B Total Wins: 13726
+Team B Total Losses: 5793
+
+
+Gen 5k vs 6k
+
+Team A Total Wins: 9101
+Team A Total Losses: 10243
+Team B Total Wins: 10243
+Team B Total Losses: 9101
+
+
+Gen 1 vs 7k
+
+Team A Total Wins: 5851
+Team A Total Losses: 13665
+Team B Total Wins: 13665
+Team B Total Losses: 5851
+
+
+Gen 6k vs 7k
+
+Team A Total Wins: 9646
+Team A Total Losses: 9728
+Team B Total Wins: 9728
+Team B Total Losses: 9646
+
+
+Gen 1 vs 8k
+
+Team A Total Wins: 5895
+Team A Total Losses: 13603
+Team B Total Wins: 13603
+Team B Total Losses: 5895
+
+
+Gen 7k vs 8k
+
+Team A Total Wins: 9336
+Team A Total Losses: 10089
+Team B Total Wins: 10089
+Team B Total Losses: 9336
+
+
+Gen 1 vs 9k
+
+Team A Total Wins: 5666
+Team A Total Losses: 13800
+Team B Total Wins: 13800
+Team B Total Losses: 5666
+
+
+Gen 8k vs 9k
+
+Team A Total Wins: 9698
+Team A Total Losses: 9671
+Team B Total Wins: 9671
+Team B Total Losses: 9698
+
+
+Gen 1 vs 10k
+
+Team A Total Wins: 5756
+Team A Total Losses: 13722
+Team B Total Wins: 13722
+Team B Total Losses: 5756
+
+
+Gen 9k vs 10k
+
+Team A Total Wins: 10149
+Team A Total Losses: 9218
+Team B Total Wins: 9218
+Team B Total Losses: 10149
