@@ -46,26 +46,26 @@ fi
 echo " * neuralNet.cpp: Compiling . . ."
 if ${CXX} ${CXXFLAGS} -c "neuralNet.cpp"
 then
-   echo " * neuralNetMain.cpp: Compilation succeeded."
+   echo " * neuralNet.cpp: Compilation succeeded."
 else
-   echo " * neuralNetMain.cpp: Compilation failed."
+   echo " * neuralNet.cpp: Compilation failed."
    echo " * Build failed."
    rm *.o
    exit 6
 fi
 
-#include for the neuralAgentTestMain
+#include for the oneNeuronMain
 
-#echo " * neuralNet.cpp: Compiling . . ."
-#if ${CXX} ${CXXFLAGS} -c "neuralAgentTestMain.cpp"
-#then
-#   echo " * neuralAgentTestMain.cpp: Compilation succeeded."
-#else
-#   echo " * neuralAgentTestMain.cpp: Compilation failed."
-#   echo " * Build failed."
-#   rm *.o
-#   exit 7
-#fi
+echo " * oneNeuron.cpp: Compiling . . ."
+if ${CXX} ${CXXFLAGS} -c "oneNeuronMain.cpp"
+then
+   echo " * oneNeuronMain.cpp: Compilation succeeded."
+else
+   echo " * oneNeuronMain.cpp: Compilation failed."
+   echo " * Build failed."
+   rm *.o
+   exit 7
+fi
 
 
 echo " * evolution.cpp: Compiling . . ."
@@ -82,7 +82,7 @@ fi
 echo " * Linking . . ."
 execFile="${challenge}RunSim"
 rm -f "${execFile}"
-if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}.o" "neuralNet.o" "evolution.o"  ${objectFiles}
+if ${CXX} ${LDLIBS} -o "${execFile}" "${challenge}Main.o" "${challenge}.o" "neuralNet.o" "evolution.o" "oneNeuronMain.o" ${objectFiles}
 then
    echo " * Linking succeeded."
    echo " * Executable file ./${execFile} is ready to run!"
