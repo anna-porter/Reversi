@@ -1,0 +1,92 @@
+
+Gen 1 vs 1k 
+
+Team A Total Wins: 5232
+Team B Total Wins: 14329
+
+Gen 1 vs 2k
+
+Team A Total Wins: 5497
+Team B Total Wins: 14103
+
+Gen 1k vs 2k
+
+Team A Total Wins: 8952
+Team B Total Wins: 10624
+
+Gen 1 vs 3k
+
+Team A Total Wins: 5953
+Team B Total Wins: 13580
+
+Gen 2k vs 3k
+
+Team A Total Wins: 8451
+Team B Total Wins: 11054
+
+Gen 1 vs 4k
+
+Gen 3k vs 4k
+
+Team A Total Wins: 8896
+Team B Total Wins: 10501
+
+Gen 1 vs 5k
+
+Team A Total Wins: 6125
+Team B Total Wins: 13423
+
+Gen 4k vs 5k
+
+Team A Total Wins: 9462
+Team B Total Wins: 9992
+
+Gen 1 vs 6k
+
+Team A Total Wins: 6156
+Team B Total Wins: 13397
+
+Gen 5k vs 6k
+
+Team A Total Wins: 9558
+Team B Total Wins: 9938
+
+Gen 1 vs 7k
+
+Team A Total Wins: 6160
+Team B Total Wins: 13389
+
+Gen 6k vs 7k
+
+Team A Total Wins: 10109
+Team B Total Wins: 9381
+
+Gen 1 vs 8k
+
+Team A Total Wins: 7270
+Team B Total Wins: 12276
+
+Gen 7k vs 8k
+
+Team A Total Wins: 10530
+Team B Total Wins: 8965
+
+Gen 1 vs 9k
+
+Team A Total Wins: 5326
+Team B Total Wins: 14178
+
+Gen 8k vs 9k
+
+Team A Total Wins: 7293
+Team B Total Wins: 12143
+
+Gen 1 vs 10k
+
+Team A Total Wins: 5717
+Team B Total Wins: 13790
+
+Gen 9k vs 10k
+
+Team A Total Wins: 8799
+Team B Total Wins: 10688

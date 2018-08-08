@@ -1,0 +1,32 @@
+
+50x50 vs 1k
+
+Team A Total Wins: 332243
+Ties: 15347
+
+50x50 vs 2k
+
+Team A Total Wins: 337625
+Ties: 14549
+
+50x50 vs 3k
+
+Team A Total Wins: 336073
+Ties: 15056
+
+50x50 vs 4k
+
+Team A Total Wins: 334242
+Ties: 15094
+
+50x50 vs 5k
+
+Team A Total Wins: 338035
+Ties: 14569
+
+50x50 vs 6k
+
+Team A Total Wins: 339660
+Ties: 14526
+
+50x50 vs 7k
