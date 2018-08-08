@@ -1,0 +1,60 @@
+
+1 vs 1k
+
+Team A Total Wins: 5948
+Team B Total Wins: 13516
+Ties: 536
+
+1 vs 2k
+
+Team A Total Wins: 4720
+Team B Total Wins: 14829
+Ties: 451
+
+1 vs 3k
+
+Team A Total Wins: 5935
+Team B Total Wins: 13653
+Ties: 412
+
+1 vs 4k
+
+Team A Total Wins: 5692
+Team B Total Wins: 13881
+Ties: 427
+
+1 vs 5k
+
+Team A Total Wins: 6108
+Team B Total Wins: 13463
+Ties: 429
+
+1 vs 6k
+
+Team A Total Wins: 5565
+Team B Total Wins: 13987
+Ties: 448
+
+1 vs 7k
+
+Team A Total Wins: 5984
+Team B Total Wins: 13567
+Ties: 449
+
+1 vs 8k
+
+Team A Total Wins: 6058
+Team B Total Wins: 13527
+Ties: 415
+
+1 vs 9k
+
+Team A Total Wins: 5834
+Team B Total Wins: 13708
+Ties: 458
+
+1 vs 10k
+
+Team A Total Wins: 5873
+Team B Total Wins: 13693
+Ties: 434
