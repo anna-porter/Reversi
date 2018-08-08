@@ -1,0 +1,27 @@
+
+1 vs 1k
+
+Team A Total Wins: 310610
+Ties: 17183
+
+1 vs 2k
+
+Team A Total Wins: 305595
+Ties: 17109
+
+1 vs 3k
+
+Team A Total Wins: 316493
+Ties: 16456
+
+1 vs 4k
+
+Team A Total Wins: 303966
+Ties: 17442
+
+1 vs 5k
+
+Team A Total Wins: 310070
+Ties: 16890
+
+1 vs 6k
