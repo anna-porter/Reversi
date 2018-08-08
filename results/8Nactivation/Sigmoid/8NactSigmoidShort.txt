@@ -1,0 +1,62 @@
+
+Gen 1 vs 1k 
+
+Team A Total Wins: 6456
+Team B Total Wins: 12934
+Ties: 610
+
+Gen 1 vs 2k
+
+Team A Total Wins: 6904
+Team B Total Wins: 12473
+Ties: 623
+
+Gen 1k vs 2k
+
+Team A Total Wins: 9905
+Team B Total Wins: 9438
+Ties: 657
+
+Gen 1 vs 3k
+
+Team A Total Wins: 6729
+Team B Total Wins: 12661
+Ties: 610
+
+Gen 2k vs 3k
+
+Team A Total Wins: 9018
+Team B Total Wins: 10323
+Ties: 659
+
+Gen 1 vs 4k
+
+Team A Total Wins: 6999
+Team B Total Wins: 12411
+Ties: 590
+
+Gen 3k vs 4k
+
+Team A Total Wins: 9566
+Team B Total Wins: 9803
+Ties: 631
+
+Gen 1 vs 5k
+
+Team A Total Wins: 6802
+Team B Total Wins: 12575
+Ties: 623
+
+Gen 4k vs 5k
+
+Team A Total Wins: 9370
+Team B Total Wins: 9956
+Ties: 674
+
+Gen 1 vs 6k
+
+Team A Total Wins: 6678
+Team B Total Wins: 12692
+Ties: 630
+
+Gen 5k vs 6k
