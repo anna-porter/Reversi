@@ -1,1 +1,1 @@
-# Reversi2
+# Reversi
